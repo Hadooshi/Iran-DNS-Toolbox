@@ -72,7 +72,10 @@ $script:dnsList = @(
     @{ Id = 47; Name = "Neustar UltraDNS"; Primary = "156.154.70.1"; Secondary = "156.154.71.1"; Type = "Global"; Cat = "Enterprise Infrastructure"; Doh = $null; DohOnly = $false }
 )
 
-$script:maxId = ($script:dnsList | Measure-Object -Property Id -Maximum).Maximum
+# NOTE: Measure-Object -Property cannot read hashtable keys on Windows PowerShell 5.1,
+# so the Id values are projected with ForEach-Object first.
+$script:maxId = ($script:dnsList | ForEach-Object { [int]$_.Id } | Sort-Object | Select-Object -Last 1)
+if (-not $script:maxId) { $script:maxId = $script:dnsList.Count }
 
 # =====================================================================================================
 #  SANCTIONED / RESTRICTED SERVICE CHECK LIST
@@ -229,6 +232,11 @@ function Test-SanctionedServices {
 
     $worker = {
         param($check, $fnResolve, $fnTest)
+        # Each runspace starts with default TLS settings; without this, PowerShell 5.1
+        # negotiates TLS 1.0 and every modern HTTPS host would be reported as failed.
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+        } catch {}
         . ([scriptblock]::Create($fnResolve))
         . ([scriptblock]::Create($fnTest))
         return (Test-ServiceAccess -Check $check)
@@ -347,6 +355,11 @@ function Test-AllDns {
     foreach ($item in $script:dnsList) {
         $sb = {
             param($dns)
+            # Runspaces do not inherit TLS settings; required for the DoH (HTTPS) probe below.
+            try {
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+            } catch {}
+
             function Ping-IP ($ip) {
                 if ([string]::IsNullOrWhiteSpace($ip)) { return 9999 }
                 $ping = New-Object System.Net.NetworkInformation.Ping
@@ -592,7 +605,8 @@ while ($true) {
     Write-Host ""
     Write-Host "===========================================================================================================" -ForegroundColor Cyan
     Write-Host " QUICK 1-CLICK DNS COMMANDS:" -ForegroundColor Yellow
-    Write-Host ("  [1-{0}] Type any number to IMMEDIATELY apply that DNS to your physical Wi-Fi/Ethernet card" -f $script:maxId) -ForegroundColor White
+    Write-Host ("  [1-{0}] Type any number from 1 to {0} ({1} DNS servers available) to IMMEDIATELY apply it" -f $script:maxId, $script:dnsList.Count) -ForegroundColor White
+    Write-Host "         to your physical Wi-Fi/Ethernet card" -ForegroundColor White
     Write-Host "  [V]    VERIFY ACTIVE SYSTEM DNS + test 20 sanctioned services (ChatGPT, Claude, Steam, GitHub...)" -ForegroundColor Green
     Write-Host "  [S]    Run ONLY the sanctioned-service access test (no adapter re-inspection)" -ForegroundColor Green
     Write-Host "  [D]    Show all DNS-over-HTTPS (DoH / port 443) endpoints" -ForegroundColor White
