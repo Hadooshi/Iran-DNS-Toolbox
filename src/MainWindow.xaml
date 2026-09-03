@@ -1,0 +1,679 @@
+<Window x:Class="DNSChangerApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DNSChangerApp"
+        mc:Ignorable="d"
+        Title="DNS Changer &amp; Anti-Sanction Tool"
+        Height="730" Width="1060"
+        MinHeight="600" MinWidth="880"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        Icon="app.ico"
+        Background="{StaticResource WindowBg}"
+        Foreground="{StaticResource TextPrimary}"
+        FontFamily="Segoe UI, Tahoma"
+        KeyDown="Window_KeyDown">
+
+    <Border BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- 0: Title Bar -->
+                <RowDefinition Height="36" />
+                <!-- 1: Top Status & Adapter Bar -->
+                <RowDefinition Height="Auto" />
+                <!-- 2: Action Toolbar -->
+                <RowDefinition Height="Auto" />
+                <!-- 3: Filter & Search Bar -->
+                <RowDefinition Height="Auto" />
+                <!-- 4: View Mode & Card Size Controls -->
+                <RowDefinition Height="Auto" />
+                <!-- 5: Main Content (Cards or Table) -->
+                <RowDefinition Height="*" />
+                <!-- 6: Status Bar -->
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
+
+            <!-- 1. TITLE BAR -->
+            <Border Grid.Row="0" Background="#1E1E1E" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Data="{StaticResource GeomNetwork}" Stroke="{StaticResource AccentBlue}" StrokeThickness="1.5"
+                              Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="DNS Changer &amp; Anti-Sanction Tool" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
+                        <TextBlock Text="— تغییردهنده DNS و ابزار رفع تحریم ویندوز" FontSize="11" Foreground="{StaticResource TextTertiary}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Window Caption Buttons -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource CaptionBtnStyle}" Click="BtnMinimize_Click" ToolTip="کوچک‌کردن">
+                            <Path Data="{StaticResource GeomMinimize}" Stroke="#CCCCCC" StrokeThickness="1" Width="10" Height="10" Stretch="Uniform" />
+                        </Button>
+                        <Button Style="{StaticResource CaptionBtnStyle}" Click="BtnMaximize_Click" ToolTip="بزرگ‌کردن / بازیابی">
+                            <Path x:Name="PathMaximize" Data="{StaticResource GeomMaximize}" Stroke="#CCCCCC" StrokeThickness="1" Width="10" Height="10" Stretch="Uniform" />
+                        </Button>
+                        <Button Style="{StaticResource CloseCaptionBtnStyle}" Click="BtnClose_Click" ToolTip="بستن برنامه">
+                            <Path Data="{StaticResource GeomClose}" Stroke="#CCCCCC" StrokeThickness="1" Width="10" Height="10" Stretch="Uniform" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. TOP STATUS & ADAPTER BAR -->
+            <Border Grid.Row="1" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="16,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="1.2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Network Adapter Selector -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="کارت شبکه فعال سیستم:" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,5" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="CmbAdapters" Grid.Column="0" Height="38"
+                                      SelectionChanged="CmbAdapters_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="2,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Path Grid.Column="0" Data="{StaticResource GeomNetwork}" Stroke="{StaticResource AccentBlue}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="#FFFFFF" />
+                                                <TextBlock Text="{Binding InterfaceDescription}" FontSize="10" Foreground="#AAAAAA" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2" Background="{Binding StatusBg}" CornerRadius="3" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StatusText}" FontSize="10" Foreground="{Binding StatusFg}" />
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Grid.Column="1" Height="38" Width="36" Margin="6,0,0,0" Style="{StaticResource FluentButtonStyle}" Click="BtnRefreshAdapters_Click" ToolTip="بروزرسانی کارت‌های شبکه">
+                                <Path Data="{StaticResource GeomRefresh}" Stroke="#CCCCCC" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Rectangle Grid.Column="1" Width="1" Fill="{StaticResource SubtleBorder}" Margin="16,2" />
+
+                    <!-- Active DNS Status Panel -->
+                    <Border Grid.Column="2" Background="{StaticResource CardBg}" CornerRadius="4" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" Padding="12,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="DotActiveStatus" Grid.Column="0" Width="8" Height="8" CornerRadius="4" Background="#107C41" Margin="0,0,10,0" VerticalAlignment="Center" />
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="دی‌ان‌اس ست‌شده روی ویندوز:" FontSize="11" Foreground="{StaticResource TextTertiary}" />
+                                <TextBlock x:Name="TxtActiveDns" Text="در حال بررسی..." FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" FontFamily="Consolas, Segoe UI" />
+                            </StackPanel>
+
+                            <Border x:Name="BadgeActiveDns" Grid.Column="2" Background="#26382C" BorderBrush="#35583E" BorderThickness="1" CornerRadius="3" Padding="8,3" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtActiveBadge" Text="بررسی سیستم" FontSize="11" FontWeight="SemiBold" Foreground="#34D399" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 3. ACTION TOOLBAR -->
+            <Border Grid.Row="2" Background="#222222" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="16,8">
+                <WrapPanel Orientation="Horizontal">
+                    <!-- 1. Fastest DNS Auto-Set -->
+                    <Button Style="{StaticResource FluentPrimaryButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnAutoFastest_Click" ToolTip="اتصال خودکار به کمترین پینگ با پورت ۵۳ فعال">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomLightning}" Fill="#FFFFFF" Width="10" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="سریع‌ترین سرور (Auto)" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 2. Reset to DHCP -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnResetDhcp_Click" ToolTip="بازگرداندن تنظیمات کارت شبکه به حالت خودکار مودم (DHCP)">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomReset}" Stroke="#CCCCCC" StrokeThickness="1.5" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="بازنشانی به خودکار (DHCP)" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 3. Flush DNS Cache -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnFlushDns_Click" ToolTip="اجرای فرمان ipconfig /flushdns و پاک‌سازی کش DNS">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomBroom}" Stroke="#CCCCCC" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="پاک‌سازی کش DNS" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 4. Re-test All Latencies -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnRetestPings_Click" ToolTip="تست مجدد سرعت پینگ و عملکرد پورت ۵۳ (کلید میانبر: F5)">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomPulse}" Stroke="#CCCCCC" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="تست مجدد تاخیر (F5)" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 5. Live Domain Verification -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnVerifySanctions_Click" ToolTip="بررسی مستقیم حل دامنه در سیستم و تست عبور از تحریم">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomShield}" Stroke="#CCCCCC" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="راستی‌آزمایی دامنه‌ها" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 6. Custom DNS -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,0,4" Padding="12,6" Click="BtnCustomDns_Click" ToolTip="تعریف و اعمال آی‌پی‌های دلخواه دی‌ان‌اس">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomPlus}" Stroke="#CCCCCC" StrokeThickness="1.5" Width="10" Height="10" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="افزودن دستی..." FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </Border>
+
+            <!-- 4. FILTER TABS & SEARCH -->
+            <Border Grid.Row="3" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="16,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Filter Tabs -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <RadioButton x:Name="TabAll" Content="همه سرورها (۴۷)" IsChecked="True" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabAntiSanction" Content="رفع تحریم (۱۳)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabGlobal" Content="عمومی جهانی (۱۸)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabPrivacy" Content="حریم خصوصی (۶)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabFamily" Content="خانواده و امنیت (۸)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabIsp" Content="داخلی ISP (۳)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" />
+                    </StackPanel>
+
+                    <!-- Search Box -->
+                    <Grid Grid.Column="1" HorizontalAlignment="Right" Width="260">
+                        <TextBox x:Name="TxtSearch" Style="{StaticResource FluentTextBoxStyle}" TextChanged="TxtSearch_TextChanged" Height="28" Padding="26,3,8,3" />
+                        <!-- Search Icon -->
+                        <Path Data="{StaticResource GeomSearch}" Stroke="{StaticResource TextTertiary}" StrokeThickness="1.3"
+                              Width="11" Height="11" Stretch="Uniform" HorizontalAlignment="Left" Margin="8,0,0,0" IsHitTestVisible="False" />
+                        <!-- Watermark -->
+                        <TextBlock Text="جستجوی نام یا IP..." Foreground="{StaticResource TextTertiary}" FontSize="11"
+                                   Margin="26,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- 4. VIEW MODE & CARD SIZE SUB-BAR -->
+            <Border Grid.Row="4" Background="#1E1E1E" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="16,5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: View Mode Toggle -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="حالت نمایش:" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <RadioButton x:Name="RadioViewCards" IsChecked="True" Checked="RadioViewMode_Checked" Style="{StaticResource SegmentedTabStyle}" Padding="10,4" Margin="0,0,4,0" ToolTip="نمایش کارتی">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource GeomCardView}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock Text="شبکه‌ای (Cards)" FontSize="11" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="RadioViewTable" Checked="RadioViewMode_Checked" Style="{StaticResource SegmentedTabStyle}" Padding="10,4" ToolTip="نمایش فهرستی / جدولی فشرده">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource GeomTableView}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock Text="فهرستی (Table)" FontSize="11" />
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+
+                    <!-- Right: Card Size Slider & Presets -->
+                    <StackPanel x:Name="PanelCardSizeControls" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="ستون‌ها:" FontSize="11" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center" Margin="0,0,6,0" />
+
+                        <Button Style="{StaticResource FluentButtonStyle}" Padding="6,2" Margin="0,0,3,0" Click="BtnPreset5_Click" ToolTip="۵ کارت در هر سطر (فشرده)">
+                            <TextBlock Text="۵ تایی" FontSize="10" />
+                        </Button>
+                        <Button Style="{StaticResource FluentButtonStyle}" Padding="6,2" Margin="0,0,3,0" Click="BtnPreset4_Click" ToolTip="۴ کارت در هر سطر">
+                            <TextBlock Text="۴ تایی" FontSize="10" />
+                        </Button>
+                        <Button Style="{StaticResource FluentButtonStyle}" Padding="6,2" Margin="0,0,3,0" Click="BtnPreset3_Click" ToolTip="۳ کارت در هر سطر (متوسط)">
+                            <TextBlock Text="۳ تایی" FontSize="10" />
+                        </Button>
+                        <Button Style="{StaticResource FluentButtonStyle}" Padding="6,2" Margin="0,0,8,0" Click="BtnPreset2_Click" ToolTip="۲ کارت در هر سطر (بزرگ)">
+                            <TextBlock Text="۲ تایی" FontSize="10" />
+                        </Button>
+
+                        <TextBlock Text="اندازه:" FontSize="11" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <Slider x:Name="SliderCardWidth" Minimum="185" Maximum="510" Value="192" Width="85" VerticalAlignment="Center" ToolTip="تنظیم روان اندازه کارت‌ها" />
+                        <TextBlock Text="{Binding Value, ElementName=SliderCardWidth, StringFormat='{}{0:0}px'}"
+                                   FontFamily="Consolas" FontSize="10" Foreground="{StaticResource TextTertiary}" Width="38" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 5. MAIN CONTENT - CARDS GRID VIEW -->
+            <ScrollViewer x:Name="CardsContainer" Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="12,8">
+                <ItemsControl x:Name="DnsCardsList">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="{Binding Value, ElementName=SliderCardWidth}" Margin="4" Background="{StaticResource CardBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="4" Padding="10,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{StaticResource CardBg}" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource CardHoverBg}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource StrongBorder}" />
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource SuccessGreen}" />
+                                                <Setter Property="BorderThickness" Value="1.5" />
+                                                <Setter Property="Background" Value="{StaticResource CardActiveBg}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <!-- Header: Name & Type Badge -->
+                                        <RowDefinition Height="Auto" />
+                                        <!-- IPs Panel -->
+                                        <RowDefinition Height="Auto" />
+                                        <!-- Category / Description -->
+                                        <RowDefinition Height="Auto" />
+                                        <!-- Latency & Port 53 Status -->
+                                        <RowDefinition Height="Auto" />
+                                        <!-- Connect Button -->
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Row 0: Name & Type -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+
+                                        <Border Grid.Column="1" CornerRadius="3" Padding="5,1" VerticalAlignment="Center"
+                                                Background="{Binding TypeBadgeBg}" BorderBrush="{Binding TypeBadgeBorder}" BorderThickness="1">
+                                            <TextBlock Text="{Binding TypeBadgeText}" FontSize="9.5" Foreground="{Binding TypeBadgeForeground}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Row 1: IPs -->
+                                    <Border Grid.Row="1" Background="#242424" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="3" Padding="6,4" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Primary, StringFormat='DNS 1: {0}'}" FontFamily="Consolas" FontSize="10.5" Foreground="#93C5FD" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Secondary, StringFormat='DNS 2: {0}'}" FontFamily="Consolas" FontSize="10.5" Foreground="{StaticResource TextSecondary}" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="1" Width="20" Height="20" Style="{StaticResource FluentButtonStyle}" Padding="0"
+                                                    Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آدرس‌های DNS" VerticalAlignment="Center">
+                                                <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Row 2: Category / Use Case -->
+                                    <TextBlock Grid.Row="2" Text="{Binding Category}" FontSize="10.5" Foreground="{StaticResource TextSecondary}"
+                                               Margin="0,0,0,6" TextTrimming="CharacterEllipsis" ToolTip="{Binding Category}" />
+
+                                    <!-- Row 3: Latency & Port 53 Status -->
+                                    <Grid Grid.Row="3" Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="تاخیر: " FontSize="10.5" Foreground="{StaticResource TextTertiary}" />
+                                            <TextBlock Text="{Binding PingDisplay}" FontWeight="SemiBold" FontSize="10.5" Foreground="{Binding PingStatusColor}" />
+                                        </StackPanel>
+
+                                        <Border Grid.Column="1" CornerRadius="2" Padding="4,1" Background="#242424" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1">
+                                            <TextBlock Text="{Binding UdpStatusText}" FontSize="9.5" Foreground="{StaticResource TextTertiary}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Row 4: Apply Button -->
+                                    <Button Grid.Row="4" Height="28" Tag="{Binding}" Click="BtnApplyDns_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource FluentButtonStyle}">
+                                                <Setter Property="Content" Value="اتصال" />
+                                                <Setter Property="FontSize" Value="11" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource SuccessGreen}" />
+                                                        <Setter Property="BorderBrush" Value="{StaticResource SuccessGreen}" />
+                                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                                        <Setter Property="Content" Value="متصل (فعال)" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- 5. MAIN CONTENT - COMPACT TABLE VIEW -->
+            <Grid x:Name="TableContainer" Grid.Row="5" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Table Header -->
+                <Border Grid.Row="0" Background="#242424" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="14,6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="75" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="90" />
+                            <ColumnDefinition Width="32" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="#" Foreground="{StaticResource TextTertiary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="1" Text="نام سرویس" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="2" Text="دسته‌بندی" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="3" Text="DNS اصلی" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="4" Text="DNS ثانویه" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="5" Text="تاخیر" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="6" Text="پورت ۵۳" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="7" Text="توضیحات و کاربرد" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="8" Text="عملیات" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Table Content -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="DnsTableList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,0,0,1" Padding="14,5">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#252525" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#2F2F2F" />
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Background" Value="#1A2D22" />
+                                                    <Setter Property="BorderBrush" Value="#107C41" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="100" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="75" />
+                                            <ColumnDefinition Width="85" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="90" />
+                                            <ColumnDefinition Width="32" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Id}" Foreground="{StaticResource TextTertiary}" FontSize="11" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <Border Grid.Column="2" Background="{Binding TypeBadgeBg}" BorderBrush="{Binding TypeBadgeBorder}" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TypeBadgeText}" FontSize="9.5" Foreground="{Binding TypeBadgeForeground}" />
+                                        </Border>
+                                        <TextBlock Grid.Column="3" Text="{Binding Primary}" FontFamily="Consolas" FontSize="11" Foreground="#93C5FD" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="4" Text="{Binding Secondary}" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="5" Text="{Binding PingDisplay}" FontWeight="SemiBold" FontSize="11" Foreground="{Binding PingStatusColor}" VerticalAlignment="Center" />
+                                        <Border Grid.Column="6" CornerRadius="2" Padding="4,1" Background="#202020" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding UdpStatusText}" FontSize="9.5" Foreground="{StaticResource TextTertiary}" />
+                                        </Border>
+                                        <TextBlock Grid.Column="7" Text="{Binding Category}" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Category}" Margin="0,0,10,0" />
+                                        <Button Grid.Column="8" Height="26" Tag="{Binding}" Click="BtnApplyDns_Click" VerticalAlignment="Center">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource FluentButtonStyle}">
+                                                    <Setter Property="Content" Value="اتصال" />
+                                                    <Setter Property="Padding" Value="8,2" />
+                                                    <Setter Property="FontSize" Value="11" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource SuccessGreen}" />
+                                                            <Setter Property="BorderBrush" Value="{StaticResource SuccessGreen}" />
+                                                            <Setter Property="Foreground" Value="#FFFFFF" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="Content" Value="متصل" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Grid.Column="9" Width="22" Height="22" Style="{StaticResource FluentButtonStyle}" Padding="0" Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آی‌پی‌ها" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                            <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- 6. BOTTOM STATUS BAR -->
+            <Border Grid.Row="6" Background="#1E1E1E" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="0,1,0,0" Padding="14,0">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtStatusToast" Grid.Column="0" Text="آماده به‌کار. تمام سرورها بارگذاری شدند." FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1" Text="Windows Network Management Utility" FontSize="11" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- MODAL 1: VERIFICATION REPORT (20 Restricted Services) -->
+            <Grid x:Name="OverlayVerification" Grid.RowSpan="7" Background="#90000000" Visibility="Collapsed">
+                <Border Width="820" Height="580" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource StrongBorder}" BorderThickness="1" CornerRadius="6" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <!-- Header & Stats -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Group Filter Tabs -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Services List -->
+                            <RowDefinition Height="*" />
+                            <!-- Action Buttons -->
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: Header & Summary Stats -->
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="راستی‌آزمایی جامع سرویس‌ها و دامنه‌های تحریم (۲۰ سرویس کلیدی)" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                                <TextBlock Text="سنجش مستقیم تفکیک نام DNS و دسترسی به هوش مصنوعی، ابزارهای توسعه، گیمینگ و استریم" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0" />
+                            </StackPanel>
+
+                            <!-- Summary Count Pill -->
+                            <Border Grid.Column="1" Background="{StaticResource CardBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="4" Padding="10,4" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="TxtVerifySummary" Text="در حال آماده‌سازی..." FontSize="11" Foreground="{StaticResource TextSecondary}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Row 1: Group Filter Tabs -->
+                        <Border Grid.Row="1" Background="#202020" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="4" Padding="6,4" Margin="0,0,0,10">
+                            <WrapPanel Orientation="Horizontal">
+                                <RadioButton x:Name="TabVerifyAll" Content="همه (۲۰)" IsChecked="True" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyAi" Content="هوش مصنوعی (۵)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyDev" Content="توسعه و کدنویسی (۳)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyCreative" Content="طراحی و گرافیک (۲)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyMedia" Content="رسانه و صوت (۲)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyGaming" Content="گیمینگ (۲)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyLearning" Content="آموزش (۳)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,3,0" Padding="8,4" FontSize="11" />
+                                <RadioButton x:Name="TabVerifyFreelance" Content="فریلنسری (۳)" Checked="FilterVerifyGroup_Checked" Style="{StaticResource SegmentedTabStyle}" Padding="8,4" FontSize="11" />
+                            </WrapPanel>
+                        </Border>
+
+                        <!-- Row 2: Services List -->
+                        <Border Grid.Row="2" Background="#1E1E1E" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="4" Margin="0,0,0,14">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                                <ItemsControl x:Name="ListVerifyServices">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="4" Padding="10,8" Margin="0,0,0,6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <!-- Name & Host -->
+                                                        <ColumnDefinition Width="1.8*" />
+                                                        <!-- Category -->
+                                                        <ColumnDefinition Width="1.2*" />
+                                                        <!-- Resolved IP -->
+                                                        <ColumnDefinition Width="1.4*" />
+                                                        <!-- Status & Note -->
+                                                        <ColumnDefinition Width="1.8*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Col 0: Service Name & Host -->
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" />
+                                                        <TextBlock Text="{Binding HostName}" FontSize="10" Foreground="{StaticResource TextTertiary}" Margin="0,1,0,0" FontFamily="Consolas, Segoe UI" />
+                                                    </StackPanel>
+
+                                                    <!-- Col 1: Category Tag -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <Border Background="#202020" BorderBrush="{StaticResource SubtleBorder}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                                            <TextBlock Text="{Binding GroupFa}" FontSize="10" Foreground="{StaticResource TextSecondary}" />
+                                                        </Border>
+                                                    </StackPanel>
+
+                                                    <!-- Col 2: Resolved IP -->
+                                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                        <TextBlock Text="IP استخراج‌شده:" FontSize="10" Foreground="{StaticResource TextTertiary}" />
+                                                        <TextBlock Text="{Binding Ip, TargetNullValue='در انتظار...'}" FontFamily="Consolas" FontSize="11" Foreground="#93C5FD" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+
+                                                    <!-- Col 3: Status Badge & Note -->
+                                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                        <Border Background="{Binding StatusBg}" BorderBrush="{Binding StatusBorder}" BorderThickness="1" CornerRadius="3" Padding="8,3" HorizontalAlignment="Right">
+                                                            <TextBlock Text="{Binding StatusTitle}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding StatusColor}" />
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Note}" FontSize="9" Foreground="{StaticResource TextTertiary}" Margin="0,2,0,0" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Row 3: Action Buttons -->
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" HorizontalAlignment="Left" Height="30" Padding="12,4" Style="{StaticResource FluentButtonStyle}" Click="BtnRerunVerification_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource GeomRefresh}" Stroke="#CCCCCC" StrokeThickness="1.5" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="اجرای مجدد راستی‌آزمایی" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Column="1" HorizontalAlignment="Right" Width="90" Height="30" Style="{StaticResource FluentPrimaryButtonStyle}" Content="بستن" Click="BtnCloseVerification_Click" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- MODAL 2: CUSTOM DNS -->
+            <Grid x:Name="OverlayCustomDns" Grid.RowSpan="6" Background="#80000000" Visibility="Collapsed">
+                <Border Width="440" Background="{StaticResource SurfaceBg}" BorderBrush="{StaticResource StrongBorder}" BorderThickness="1" CornerRadius="6" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="افزودن و اعمال دی‌ان‌اس دستی (Custom DNS)" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,14" />
+
+                        <TextBlock Text="نام سرویس (اختیاری):" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                        <TextBox x:Name="TxtCustomName" Style="{StaticResource FluentTextBoxStyle}" Text="Custom DNS" Height="28" Margin="0,0,0,10" />
+
+                        <TextBlock Text="آی‌پی اصلی (Primary DNS):" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                        <TextBox x:Name="TxtCustomPrimary" Style="{StaticResource FluentTextBoxStyle}" Height="28" Margin="0,0,0,10" FontFamily="Consolas" />
+
+                        <TextBlock Text="آی‌پی ثانویه (Secondary DNS - اختیاری):" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                        <TextBox x:Name="TxtCustomSecondary" Style="{StaticResource FluentTextBoxStyle}" Height="28" Margin="0,0,0,16" FontFamily="Consolas" />
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Width="80" Height="28" Style="{StaticResource FluentButtonStyle}" Content="انصراف" Click="BtnCancelCustomDns_Click" Margin="0,0,8,0" />
+                            <Button Width="110" Height="28" Style="{StaticResource FluentPrimaryButtonStyle}" Content="اعمال تنظیمات" Click="BtnSaveCustomDns_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

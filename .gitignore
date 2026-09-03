@@ -1,0 +1,23 @@
+# .NET build and intermediate folders
+[Bb]in/
+[Oo]bj/
+publish_tmp/
+
+# Visual Studio / Rider / Antigravity temporary files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Python cache (if any icons were generated)
+__pycache__/
+*.pyc
+*.pyo
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
