@@ -4,12 +4,14 @@
 
 [![Windows](https://img.shields.io/badge/OS-Windows%2010%20%2F%2011-blue.svg?style=flat-square&logo=windows)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-6.0%20WPF-512BD4.svg?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
-[![Portable](https://img.shields.io/badge/App-Single--File%20Portable-success.svg?style=flat-square)](https://github.com/Hadooshi/Iran-DNS-Toolbox)
+[![Download Latest Release](https://img.shields.io/badge/Download-DNSChanger.exe-success?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
 [![Servers](https://img.shields.io/badge/DNS%20Servers-47%20Verified-informational.svg?style=flat-square)](https://github.com/Hadooshi/Iran-DNS-Toolbox)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
 **ابزار جامع، فوق‌سریع و هوشمند تغییر DNS و عبور از تحریم‌های اینترنتی برای ویندوز**  
 **شامل ۴۷ سرور تست‌شده و راستی‌آزمایی زنده ۲۰ سرویس بین‌المللی**
+
+[![Download Now](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F%20%D8%AF%D8%A7%D9%86%D9%84%D9%88%D8%AF%20%D9%85%D8%B3%D8%AA%D9%82%DB%8C%D9%85%20%D9%86%D8%B1%D9%85%E2%80%8C%D8%A7%D9%81%D8%B2%D8%A7%D8%B1%20(DNSChanger.exe)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
 
 </div>
 
@@ -55,7 +57,8 @@
 این ابزار به دو شیوه قابل استفاده است:
 
 #### روش اول: نرم‌افزار گرافیکی و پرتابل ویندوز (پیشنهادی ⭐)
-تنها کافیست روی فایل **`DNSChanger.exe`** دابل‌کلیک کنید. برنامه بلافاصله باز شده و پس از سنجش پینگ، آماده استفاده است.
+1. آخرین نسخه آماده را از **[صفحه انتشار (Releases)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)** دانلود کنید.
+2. روی فایل **`DNSChanger.exe`** دابل‌کلیک کنید. برنامه بلافاصله باز شده و پس از سنجش پینگ، آماده استفاده است.
 
 #### روش دوم: محیط خط فرمان و ترمینال (CLI)
 1. روی فایل **`DNS_Changer.bat`** دابل‌کلیک کنید.
@@ -182,9 +185,10 @@ It allows users to switch network DNS with **1 click** directly on their physica
 ---
 
 ### 🚀 Usage
-1. Run **`DNSChanger.exe`** directly by double-clicking it.
-2. Select your physical network adapter (auto-detected).
-3. Click **Connect** on any desired DNS card or table row, or click **Auto Fastest**.
+1. Download **`DNSChanger.exe`** from **[GitHub Releases](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)**.
+2. Run **`DNSChanger.exe`** directly by double-clicking it.
+3. Select your physical network adapter (auto-detected).
+4. Click **Connect** on any desired DNS card or table row, or click **Auto Fastest**.
 
 ---
 

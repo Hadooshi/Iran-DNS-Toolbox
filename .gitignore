@@ -2,6 +2,7 @@
 [Bb]in/
 [Oo]bj/
 publish_tmp/
+*.exe
 
 # Visual Studio / Rider / Antigravity temporary files
 .vs/
