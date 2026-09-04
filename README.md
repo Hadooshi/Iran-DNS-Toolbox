@@ -3,13 +3,15 @@
 <div align="center">
 
 [![Windows](https://img.shields.io/badge/OS-Windows%2010%20%2F%2011-blue.svg?style=flat-square&logo=windows)](https://microsoft.com)
+[![Version](https://img.shields.io/badge/Version-2.2.0-0078D4.svg?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
+[![Author](https://img.shields.io/badge/Author-Hadooshi-blueviolet.svg?style=flat-square&logo=github)](https://github.com/Hadooshi)
 [![.NET](https://img.shields.io/badge/.NET-6.0%20WPF-512BD4.svg?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
 [![Download Latest Release](https://img.shields.io/badge/Download-DNSChanger.exe-success?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
 [![Servers](https://img.shields.io/badge/DNS%20Servers-47%20Verified-informational.svg?style=flat-square)](https://github.com/Hadooshi/Iran-DNS-Toolbox)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
 **ابزار جامع، فوق‌سریع و هوشمند تغییر DNS و عبور از تحریم‌های اینترنتی برای ویندوز**  
-**شامل ۴۷ سرور تست‌شده و راستی‌آزمایی زنده ۲۰ سرویس بین‌المللی**
+**شامل ۴۷ سرور تست‌شده، مرتب‌سازی هوشمند و راستی‌آزمایی زنده ۲۰ سرویس بین‌المللی**
 
 [![Download Now](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F%20%D8%AF%D8%A7%D9%86%D9%84%D9%88%D8%AF%20%D9%85%D8%B3%D8%AA%D9%82%DB%8C%D9%85%20%D9%86%D8%B1%D9%85%E2%80%8C%D8%A7%D9%81%D8%B2%D8%A7%D8%B1%20(DNSChanger.exe)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
 
@@ -22,7 +24,7 @@
 ## 🇮🇷 راهنمای فارسی
 
 ### 🌟 درباره پروژه
-پروژه **DNS Changer & Anti-Sanction Tool** یک نرم‌افزار نیتیو، بسیار سریع، سبک و مدرن برای سیستم‌عامل ویندوز است. این ابزار به صورت همزمان وضعیت پینگ واقعی (ICMP) و باز بودن پورت ۵۳ (UDP Query) بیش از **۴۷ سرور DNS** (شامل سرورهای رفع تحریم ایران، ستون فقرات جهانی، حریم خصوصی، خانواده و ISPها) را سنجش کرده و امکان تنظیم ۱-کلیکی آن‌ها را مستقیماً روی **کارت شبکه فیزیکی سیستم (وای‌فای یا اترنت)** فراهم می‌کند.
+پروژه **DNS Changer & Anti-Sanction Tool** یک نرم‌افزار نیتیو، بسیار سریع، سبک و مدرن برای سیستم‌عامل ویندوز توسط **[Hadooshi](https://github.com/Hadooshi)** است. این ابزار به صورت همزمان وضعیت پینگ واقعی (ICMP) و باز بودن پورت ۵۳ (UDP Query) بیش از **۴۷ سرور DNS** (شامل سرورهای رفع تحریم ایران، ستون فقرات جهانی، حریم خصوصی، خانواده و ISPها) را سنجش کرده و امکان تنظیم ۱-کلیکی آن‌ها را مستقیماً روی **کارت شبکه فیزیکی سیستم (وای‌فای یا اترنت)** فراهم می‌کند.
 
 ---
 
@@ -36,18 +38,27 @@
 
 * 📁 **تک‌فایل و کاملاً پرتابل (`DNSChanger.exe`):** بدون نیاز به نصب؛ تنها با دابل‌کلیک در هر پوشه‌ای اجرا می‌شود (حجم بسیار سبک کمتر از ۴۰۰ کیلوبایت).
 * 👑 **درخواست خودکار مجوز Administrator:** مجهز به مانیفست رسمی ویندوز جهت اعمال بی‌نقص تنظیمات شبکه بدون باز شدن پنجره سیاه کنسول (`cmd.exe`).
-* 🎨 **طراحی اصیل و مدرن Fluent Dark**.
+* 🎨 **طراحی اصیل و مدرن Fluent Dark** با نمایش بج نسخه `v2.2.0` و دسترسی سریع.
+* 🔀 **مرتب‌سازی هوشمند سرورها (`Smart Sorting`):** چینش سریع سرورها با ۵ حالت کاربردی:
+  * **⚡ کمترین تاخیر (پینگ):** انتقال سریع‌ترین و پایدارترین سرورها به صدر لیست پس از تست تاخیر.
+  * **📶 بیشترین تاخیر (پینگ):** تفکیک سرورهای با تاخیر یا پینگ بالا.
+  * **🔤 نام سرور (A-Z):** مرتب‌سازی الفبایی فارسی و انگلیسی.
+  * **🛡️ پورت ۵۳ (سالم اول):** اولویت دادن به سرورهایی که پورت ۵۳ آن‌ها باز است و بدون دستکاری پاسخ می‌دهند.
+  * **پیش‌فرض:** چیدمان استاندارد بر پایه شناسه و دسته‌بندی موضوعی سرورها.
+* 🐙 **دکمه دسترسی مستقیم به گیت‌هاب:** آیکون اختصاصی گیت‌هاب در نوار عنوان جهت مشاهده سورس‌کد، ستاره دادن و پیگیری آپدیت‌ها در مخزن رسمی ([Hadooshi/Iran-DNS-Toolbox](https://github.com/Hadooshi/Iran-DNS-Toolbox)).
 * 🎛️ **تغییر دلخواه ابعاد کارت‌ها (اسلایدر):** قابلیت تنظیم روان عرض کارت‌ها از ۱۸۵ تا ۵۱۰ پیکسل، به همراه دکمه‌های چینش سریع:
   * **۵ تایی (فشرده):** جا گرفتن ۵ کارت در هر سطر برای مانیتورهای استاندارد.
   * **۴ تایی و ۳ تایی:** چیدمان متعادل و استاندارد.
   * **۲ تایی (بزرگ):** کارت‌های عریض با جزئیات کامل.
 * 📊 **حالت نمایش جدولی/فهرستی (Table View):** سوییچ فوری به جدول افقی بسیار فشرده برای مشاهده تمام مشخصات، تاخیر زنده و اتصال ۱-کلیکی در یک ردیف.
-* 🛡️ **راستی‌آزمایی جامع ۲۰ سرویس تحریم:** سنجش تفکیک نام DNS و دسترسی به وب (با تشخیص کد ۴۰۳) برای ۲۰ سرویس محبوب هوش مصنوعی، برنامه‌نویسی، گیمینگ و فریلنسری.
+* 🛡️ **راستی‌آزمایی جامع ۲۰ سرویس تحریم:** سنجش تفکیک نام DNS و دسترسی واقعی به وب با تشخیص دقیق خطای تحریم ۴۰۳ (مانند تحریم مستقیم گوگل، جمینای، OpenAI و Claude) به صورت Real-time در هر بار کلیک.
 * 🎯 **شناسایی خودکار کارت فیزیکی:** انتخاب خودکار کارت وای‌فای یا اترنت متصل و فیلتر کردن اتوماتیک کارت‌های مجازی VPN (مانند NordLynx, WireGuard, TAP).
 * ⚡ **اتصال سریع‌ترین سرور (`Auto Fastest`):** پیدا کردن کمترین پینگ با پورت ۵۳ فعال و ست کردن آن با یک کلیک.
-* 🔄 **بازگردانی به خودکار (`Reset DHCP`):** برگرداندن تنظیمات کارت شبکه به حالت پیش‌فرض مودم/ISP.
+* 🔄 **بازگردانی سریع به خودکار (`Reset DHCP`):** برگرداندن تنظیمات DNS کارت شبکه به حالت خودکار مودم بدون نیاز به ریستارت.
+* 🛠️ **تعمیر کامل و اضطراری شبکه (`Emergency Reset`):** اجرای زنجیره کامل فرمان‌های ریست استک شبکه (`ipconfig /flushdns`, `/release`, `/renew`, `netsh winsock reset`, `netsh int ip reset`) برای مواقعی که شبکه ویندوز دچار اختلال اساسی شده است همراه با پیام ریستارت سیستم.
+* ➕ **کارت‌های DNS سفارشی دائمی (`Custom DNS`):** تبدیل خودکار هر دی‌ان‌اس دستی به یک کارت مستقل با پینگ زنده، ذخیره‌سازی پرتابل در فایل `custom_dns.json`، تب اختصاصی فیلتر و امکان حذف کارت.
+* 👑 **پشتیبانی از شکن حرفه‌ای (Shecan Pro):** افزوده شدن کارت اختصاصی شکن پرو همراه با نشان هشدار و راهنمای ثبت IP جهت جلوگیری از قطعی اتصال.
 * 🧹 **پاک‌سازی کش DNS (`Flush DNS`):** اجرای فوری و خودکار دستور `ipconfig /flushdns`.
-* ➕ **دی‌ان‌اس سفارشی (`Custom DNS`):** امکان وارد کردن آی‌پی‌های دلخواه با اعتبارسنجی خودکار.
 * 📋 **کپی سریع آی‌پی‌ها:** دکمه کپی اختصاصی برای هر سرور جهت انتقال آدرس‌ها به کلیپ‌بورد.
 
 ---
@@ -67,12 +78,13 @@
 
 ---
 
-### 🌐 دسته‌بندی سرورهای DNS (۴۷ سرور)
+### 🌐 دسته‌بندی سرورهای DNS (۴۸ سرور)
 
 #### ۱. سرورهای رفع تحریم و کاهش پینگ گیمینگ ایران (Anti-Sanction)
 | ردیف | نام سرویس | آی‌پی اصلی (Primary) | آی‌پی ثانویه (Secondary) | کاربرد و کارایی |
 | :---: | :--- | :--- | :--- | :--- |
 | **۱** | **شکن (Shecan)** | `178.22.122.100` | `185.51.200.2` | وبسایت‌ها، استیم و لانچرهای بازی |
+| **۵۰** | **شکن حرفه‌ای (Shecan Pro)** | `178.22.122.101` | `185.51.200.1` | سرور ویژه شکن با پایداری بالاتر (نیازمند اکانت و ثبت IP) |
 | **۲** | **رادار گیم (Radar Game)** | `10.202.10.10` | `10.202.10.11` | گیمینگ و کاهش پینگ (Xbox و PC) |
 | **۳** | **الکترو (Electro)** | `78.157.42.100` | `78.157.42.101` | مچمیکینگ استیم، پلی‌استیشن و آنلاین |
 | **۴** | **بگذر سرور ۱ (Begzar 1)** | `185.55.226.26` | `185.55.225.25` | دانلود بازی و لودینگ وب کامپیوتر |
@@ -166,7 +178,7 @@ build.bat
 ## 🇬 English Documentation
 
 ### 🌟 About The Project
-**DNS Changer & Anti-Sanction Tool** is a native, ultra-fast, lightweight Windows desktop application designed to test ICMP latency and UDP Port 53 reachability for **47+ major Anti-Sanction & Global DNS servers**.
+**DNS Changer & Anti-Sanction Tool** (v2.2.0) is a native, ultra-fast, lightweight Windows desktop application by **[Hadooshi](https://github.com/Hadooshi)** designed to test ICMP latency and UDP Port 53 reachability for **47+ major Anti-Sanction & Global DNS servers**.
 
 It allows users to switch network DNS with **1 click** directly on their physical network adapter (Wi-Fi or Ethernet), while automatically ignoring virtual VPN adapters (such as NordLynx, WireGuard, and TAP interfaces).
 
@@ -174,12 +186,19 @@ It allows users to switch network DNS with **1 click** directly on their physica
 
 ### ✨ Features
 * **Portable Single-File Executable (`DNSChanger.exe`):** No installation needed; ultra-compact (~360 KB).
-* **Native Windows 11 Fluent Dark UI:** Modern, clean dark theme with authentic vector glyphs.
+* **Native Windows 11 Fluent Dark UI:** Modern, clean dark theme with titlebar version badge and authentic vector glyphs.
+* **Smart Multi-Criteria Sorting:** Sort DNS servers and table rows instantly by:
+  * **⚡ Lowest Latency (Fastest Ping)**
+  * **📶 Highest Latency**
+  * **🔤 Server Name (A-Z Alphabetical)**
+  * **🛡️ Port 53 Status (Active & Working First)**
+  * **Default (Category & ID order)**
+* **Direct GitHub Integration:** Title bar vector button opening the official repository ([Hadooshi/Iran-DNS-Toolbox](https://github.com/Hadooshi/Iran-DNS-Toolbox)).
 * **Flexible Layout & Card Size Slider:** Dynamic card resizing (185px to 510px) with 5-card, 4-card, 3-card, and 2-card per row presets.
 * **Compact Table/List View:** Highly dense horizontal table view for power users.
 * **Comprehensive 20-Service Sanction Verification:** Real-time DNS resolution and HTTP geo-block detection (code 403) for AI, Dev, Creative, Gaming, Media, Learning, and Freelance services.
 * **Multi-threaded Testing:** Parallel ping and UDP DNS query testing for all 47 servers in under 2 seconds.
-* **1-Click Actions:** Auto-set fastest DNS, reset to DHCP, flush DNS cache (`ipconfig /flushdns`), and custom DNS input.
+* **1-Click Actions:** Auto-set fastest DNS, reset to DHCP, flush DNS cache (`ipconfig /flushdns`), emergency network stack reset, and persistent custom DNS cards.
 * **Self-Elevating Admin:** Embedded Windows application manifest for silent UAC elevation.
 
 ---

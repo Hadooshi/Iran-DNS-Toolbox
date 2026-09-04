@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace DNSChangerApp
         private List<NetworkAdapterInfo> _adapters = new();
         private NetworkAdapterInfo? _selectedAdapter = null;
         private string _activeFilter = "All";
+        private string _activeSort = "Default";
         private string _activeVerifyFilter = "All";
         private bool _isTestingAll = false;
         private bool _isVerifyingServices = false;
@@ -48,8 +50,19 @@ namespace DNSChangerApp
         {
             _masterDnsList.Clear();
 
-            // 1. Iranian Anti-Sanction & Gaming DNS (13 Servers)
+            // 1. Iranian Anti-Sanction & Gaming DNS (14 Servers)
             _masterDnsList.Add(new DnsItem { Id = 1, Name = "شکن (Shecan)", Primary = "178.22.122.100", Secondary = "185.51.200.2", Type = "Anti-Sanction", Category = "وبسایت‌ها، استیم و لانچرهای بازی" });
+            _masterDnsList.Add(new DnsItem
+            {
+                Id = 50,
+                Name = "شکن حرفه‌ای (Shecan Pro)",
+                Primary = "178.22.122.101",
+                Secondary = "185.51.200.1",
+                Type = "Anti-Sanction",
+                Category = "سرویس ویژه شکن با پایداری بالاتر",
+                HasNotice = true,
+                NoticeText = "این سرور نیازمند اشتراک فعال شکن حرفه‌ای است. با هر بار تغییر اینترنت یا خاموش و روشن شدن مودم، باید نشانی آی‌پی جدید خود را در پنل کاربری سایت شکن ثبت و اعلام نمایید."
+            });
             _masterDnsList.Add(new DnsItem { Id = 2, Name = "رادار گیم (Radar Game)", Primary = "10.202.10.10", Secondary = "10.202.10.11", Type = "Anti-Sanction", Category = "گیمینگ و کاهش پینگ (Xbox & PC)" });
             _masterDnsList.Add(new DnsItem { Id = 3, Name = "الکترو (Electro)", Primary = "78.157.42.100", Secondary = "78.157.42.101", Type = "Anti-Sanction", Category = "مچمیکینگ استیم، پلی‌استیشن و آنلاین" });
             _masterDnsList.Add(new DnsItem { Id = 4, Name = "بگذر سرور ۱ (Begzar 1)", Primary = "185.55.226.26", Secondary = "185.55.225.25", Type = "Anti-Sanction", Category = "دانلود بازی و لودینگ وب PC" });
@@ -105,7 +118,27 @@ namespace DNSChangerApp
             _masterDnsList.Add(new DnsItem { Id = 27, Name = "شاتل (Shatel ADSL)", Primary = "85.15.1.14", Secondary = "85.15.1.15", Type = "ISP", Category = "شبکه ADSL و اینترنت شاتل" });
             _masterDnsList.Add(new DnsItem { Id = 30, Name = "آسیاتک (AsiaTech)", Primary = "194.36.174.161", Secondary = "178.22.122.100", Type = "ISP", Category = "مشترکین آسیاتک و پینگ پایین" });
 
+            // 6. User Custom DNS (Persisted from custom_dns.json)
+            var savedCustoms = NetworkService.LoadCustomDnsItems();
+            foreach (var ci in savedCustoms)
+            {
+                _masterDnsList.Add(ci);
+            }
+
+            UpdateTabCounters();
             ApplyFilterAndSearch();
+        }
+
+        private void UpdateTabCounters()
+        {
+            if (TabAll == null) return;
+            TabAll.Content = $"همه سرورها ({_masterDnsList.Count})";
+            TabAntiSanction.Content = $"رفع تحریم ({_masterDnsList.Count(d => d.Type == "Anti-Sanction")})";
+            TabGlobal.Content = $"عمومی جهانی ({_masterDnsList.Count(d => d.Type == "Global")})";
+            TabPrivacy.Content = $"حریم خصوصی ({_masterDnsList.Count(d => d.Type == "Privacy")})";
+            TabFamily.Content = $"خانواده و امنیت ({_masterDnsList.Count(d => d.Type == "Family")})";
+            TabIsp.Content = $"داخلی ISP ({_masterDnsList.Count(d => d.Type == "ISP")})";
+            TabCustom.Content = $"سفارشی کاربر ({_masterDnsList.Count(d => d.IsCustom)})";
         }
 
         private async Task RefreshAdaptersAsync()
@@ -235,6 +268,7 @@ namespace DNSChangerApp
                     "Privacy" => item.Type == "Privacy",
                     "Family" => item.Type == "Family",
                     "ISP" => item.Type == "ISP",
+                    "Custom" => item.IsCustom,
                     _ => true
                 };
 
@@ -249,10 +283,28 @@ namespace DNSChangerApp
                        item.Type.ToLower().Contains(query);
             });
 
+            IEnumerable<DnsItem> sorted = _activeSort switch
+            {
+                "PingAsc" => filtered.OrderBy(d => (d.BestPing <= 0 || d.BestPing >= 9999) ? 999999 : d.BestPing).ThenBy(d => d.Id),
+                "PingDesc" => filtered.OrderByDescending(d => d.BestPing >= 9999 ? -1 : d.BestPing).ThenBy(d => d.Id),
+                "NameAsc" => filtered.OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase),
+                "Port53" => filtered.OrderByDescending(d => d.IsPort53Working).ThenBy(d => (d.BestPing <= 0 || d.BestPing >= 9999) ? 999999 : d.BestPing).ThenBy(d => d.Id),
+                _ => filtered.OrderBy(d => d.Id)
+            };
+
             _displayedDnsList.Clear();
-            foreach (var item in filtered)
+            foreach (var item in sorted)
             {
                 _displayedDnsList.Add(item);
+            }
+        }
+
+        private void CmbSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbSort?.SelectedItem is ComboBoxItem item && item.Tag is string sortKey)
+            {
+                _activeSort = sortKey;
+                ApplyFilterAndSearch();
             }
         }
 
@@ -266,6 +318,7 @@ namespace DNSChangerApp
             else if (TabPrivacy.IsChecked == true) _activeFilter = "Privacy";
             else if (TabFamily.IsChecked == true) _activeFilter = "Family";
             else if (TabIsp.IsChecked == true) _activeFilter = "ISP";
+            else if (TabCustom.IsChecked == true) _activeFilter = "Custom";
 
             ApplyFilterAndSearch();
         }
@@ -362,6 +415,51 @@ namespace DNSChangerApp
             ShowToast("حافظه موقت DNS ویندوز با موفقیت پاک‌سازی شد (ipconfig /flushdns).");
         }
 
+        private async void BtnEmergencyReset_Click(object sender, RoutedEventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "این عملیات پشته کامل شبکه ویندوز (TCP/IP & Winsock)، کش DNS و آدرس‌های اختصاصی IP را به طور عمیق ریست می‌کند.\n\n" +
+                "فرمان‌های اجرایی به ترتیب:\n" +
+                "1. ipconfig /flushdns\n" +
+                "2. ipconfig /release\n" +
+                "3. ipconfig /renew\n" +
+                "4. netsh winsock reset\n" +
+                "5. netsh int ip reset\n\n" +
+                "ویندوز برای اعمال این تغییرات نیاز به ریستارت دارد.\n" +
+                "آیا مایل به اجرای تعمیر اضطراری شبکه هستید؟",
+                "تعمیر اضطراری و ریست کامل شبکه",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            ShowToast("در حال اجرای زنجیره تعمیر عمیق شبکه (Winsock & IP Stack)...");
+            var (success, log) = await NetworkService.ExecuteEmergencyNetworkResetAsync();
+
+            await RefreshAdaptersAsync();
+
+            var restartPrompt = MessageBox.Show(
+                "عملیات تعمیر کامل پشته شبکه ویندوز با موفقیت انجام شد.\n\n" +
+                "جهت بازسازی کاتالوگ‌های Winsock و فعال‌سازی مجدد پروتکل‌های شبکه، سیستم باید ریستارت شود.\n\n" +
+                "آیا مایلید سیستم هم‌اکنون ریستارت شود؟",
+                "درخواست ریستارت سیستم",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (restartPrompt == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start("shutdown.exe", "/r /t 5 /c \"DNS Changer: سیستم در حال ریستارت پس از تعمیر شبکه است...\"");
+                }
+                catch { }
+            }
+            else
+            {
+                ShowToast("تعمیر شبکه انجام شد. لطفاً در اولین فرصت سیستم را ریستارت کنید.");
+            }
+        }
+
         private async void BtnRetestPings_Click(object sender, RoutedEventArgs e)
         {
             await RunTestAllPingsAsync();
@@ -374,10 +472,7 @@ namespace DNSChangerApp
         private async void BtnVerifySanctions_Click(object sender, RoutedEventArgs e)
         {
             OverlayVerification.Visibility = Visibility.Visible;
-            if (_verifyServicesMaster.Count == 0)
-            {
-                await RunAllServiceChecksAsync();
-            }
+            await RunAllServiceChecksAsync();
         }
 
         private async void BtnRerunVerification_Click(object sender, RoutedEventArgs e)
@@ -389,6 +484,9 @@ namespace DNSChangerApp
         {
             if (_isVerifyingServices) return;
             _isVerifyingServices = true;
+
+            // Clear OS DNS cache before verifying so tests query current live DNS
+            NetworkService.FlushDns();
 
             TxtVerifySummary.Text = "در حال ارسال درخواست و سنجش ۲۰ سرویس...";
 
@@ -475,17 +573,47 @@ namespace DNSChangerApp
 
             OverlayCustomDns.Visibility = Visibility.Collapsed;
 
+            int nextId = _masterDnsList.Count > 0 ? _masterDnsList.Max(d => d.Id) + 1 : 100;
             var customItem = new DnsItem
             {
-                Id = 999,
+                Id = nextId,
                 Name = name,
                 Primary = primary,
                 Secondary = secondary,
                 Type = "Custom",
-                Category = "تنظیم دستی کاربر"
+                Category = "تنظیم دستی کاربر",
+                IsCustom = true
             };
 
+            _masterDnsList.Add(customItem);
+            NetworkService.SaveCustomDnsItems(_masterDnsList.Where(d => d.IsCustom).ToList());
+            UpdateTabCounters();
+            ApplyFilterAndSearch();
+
+            ShowToast($"کارت DNS سفارشی «{name}» ایجاد و ذخیره شد.");
+
+            // Test ping in background for the new card
+            _ = NetworkService.TestDnsItemAsync(customItem);
+
+            // Apply it on the selected adapter
             await ApplySelectedDnsAsync(customItem);
+        }
+
+        private void BtnDeleteCustomDns_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is DnsItem item && item.IsCustom)
+            {
+                var res = MessageBox.Show($"آیا از حذف کارت DNS سفارشی «{item.Name}» اطمینان دارید؟", "حذف کارت DNS", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.Yes)
+                {
+                    _masterDnsList.Remove(item);
+                    _displayedDnsList.Remove(item);
+                    NetworkService.SaveCustomDnsItems(_masterDnsList.Where(d => d.IsCustom).ToList());
+                    UpdateTabCounters();
+                    ApplyFilterAndSearch();
+                    ShowToast($"کارت DNS «{item.Name}» با موفقیت حذف شد.");
+                }
+            }
         }
 
         private void BtnCopyIp_Click(object sender, RoutedEventArgs e)
@@ -512,6 +640,22 @@ namespace DNSChangerApp
             else if (e.ButtonState == MouseButtonState.Pressed)
             {
                 DragMove();
+            }
+        }
+
+        private void BtnGitHub_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/Hadooshi/Iran-DNS-Toolbox",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowToast($"خطا در باز کردن مرورگر: {ex.Message}", true);
             }
         }
 

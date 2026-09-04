@@ -51,11 +51,17 @@
                         <Path Data="{StaticResource GeomNetwork}" Stroke="{StaticResource AccentBlue}" StrokeThickness="1.5"
                               Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" />
                         <TextBlock Text="DNS Changer &amp; Anti-Sanction Tool" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" />
+                        <Border Background="#1E3A5F" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="v2.2.0" FontSize="10" FontWeight="SemiBold" Foreground="#93C5FD" />
+                        </Border>
                         <TextBlock Text="— تغییردهنده DNS و ابزار رفع تحریم ویندوز" FontSize="11" Foreground="{StaticResource TextTertiary}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <!-- Window Caption Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource CaptionBtnStyle}" Click="BtnGitHub_Click" ToolTip="مخزن گیت‌هاب پروژه (Hadooshi / Iran-DNS-Toolbox)">
+                            <Path Data="{StaticResource GeomGitHub}" Fill="#CCCCCC" Width="14" Height="14" Stretch="Uniform" />
+                        </Button>
                         <Button Style="{StaticResource CaptionBtnStyle}" Click="BtnMinimize_Click" ToolTip="کوچک‌کردن">
                             <Path Data="{StaticResource GeomMinimize}" Stroke="#CCCCCC" StrokeThickness="1" Width="10" Height="10" Stretch="Uniform" />
                         </Button>
@@ -168,7 +174,15 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- 4. Re-test All Latencies -->
+                    <!-- 4. Emergency Network Stack Reset -->
+                    <Button Style="{StaticResource FluentEmergencyButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnEmergencyReset_Click" ToolTip="تعمیر اضطراری و ریست عمیق پشته شبکه ویندوز (Winsock &amp; IP Reset)">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource GeomWrench}" Stroke="#FDBA74" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="تعمیر کامل شبکه (Reset)" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 5. Re-test All Latencies -->
                     <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnRetestPings_Click" ToolTip="تست مجدد سرعت پینگ و عملکرد پورت ۵۳ (کلید میانبر: F5)">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource GeomPulse}" Stroke="#CCCCCC" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
@@ -176,7 +190,7 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- 5. Live Domain Verification -->
+                    <!-- 6. Live Domain Verification -->
                     <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,8,4" Padding="12,6" Click="BtnVerifySanctions_Click" ToolTip="بررسی مستقیم حل دامنه در سیستم و تست عبور از تحریم">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource GeomShield}" Stroke="#CCCCCC" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
@@ -184,7 +198,7 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- 6. Custom DNS -->
+                    <!-- 7. Custom DNS -->
                     <Button Style="{StaticResource FluentButtonStyle}" Margin="0,0,0,4" Padding="12,6" Click="BtnCustomDns_Click" ToolTip="تعریف و اعمال آی‌پی‌های دلخواه دی‌ان‌اس">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource GeomPlus}" Stroke="#CCCCCC" StrokeThickness="1.5" Width="10" Height="10" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
@@ -204,12 +218,13 @@
 
                     <!-- Filter Tabs -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <RadioButton x:Name="TabAll" Content="همه سرورها (۴۷)" IsChecked="True" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
-                        <RadioButton x:Name="TabAntiSanction" Content="رفع تحریم (۱۳)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
-                        <RadioButton x:Name="TabGlobal" Content="عمومی جهانی (۱۸)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
-                        <RadioButton x:Name="TabPrivacy" Content="حریم خصوصی (۶)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
-                        <RadioButton x:Name="TabFamily" Content="خانواده و امنیت (۸)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
-                        <RadioButton x:Name="TabIsp" Content="داخلی ISP (۳)" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" />
+                        <RadioButton x:Name="TabAll" Content="همه سرورها" IsChecked="True" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabAntiSanction" Content="رفع تحریم" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabGlobal" Content="عمومی جهانی" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabPrivacy" Content="حریم خصوصی" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabFamily" Content="خانواده و امنیت" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabIsp" Content="داخلی ISP" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" Margin="0,0,4,0" />
+                        <RadioButton x:Name="TabCustom" Content="سفارشی کاربر" Checked="FilterTab_Checked" Style="{StaticResource SegmentedTabStyle}" />
                     </StackPanel>
 
                     <!-- Search Box -->
@@ -260,6 +275,19 @@
                                 <TextBlock Text="فهرستی (Table)" FontSize="11" />
                             </StackPanel>
                         </RadioButton>
+                    </StackPanel>
+
+                    <!-- Middle: Sort Controls -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
+                        <Path Data="{StaticResource GeomSort}" Stroke="{StaticResource TextSecondary}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="مرتب‌سازی:" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <ComboBox x:Name="CmbSort" Width="170" Height="28" SelectionChanged="CmbSort_SelectionChanged" FontSize="11">
+                            <ComboBoxItem Content="پیش‌فرض (دسته‌بندی)" Tag="Default" IsSelected="True" />
+                            <ComboBoxItem Content="⚡ کمترین تاخیر (سریع‌تر)" Tag="PingAsc" />
+                            <ComboBoxItem Content="📶 بیشترین تاخیر (پینگ)" Tag="PingDesc" />
+                            <ComboBoxItem Content="🔤 نام سرور (الفبا)" Tag="NameAsc" />
+                            <ComboBoxItem Content="🛡️ پورت ۵۳ (فعال اول)" Tag="Port53" />
+                        </ComboBox>
                     </StackPanel>
 
                     <!-- Right: Card Size Slider & Presets -->
@@ -329,16 +357,28 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <!-- Row 0: Name & Type -->
+                                    <!-- Row 0: Name, Notice Badge & Type -->
                                     <Grid Grid.Row="0" Margin="0,0,0,6">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
 
-                                        <Border Grid.Column="1" CornerRadius="3" Padding="5,1" VerticalAlignment="Center"
+                                        <!-- Special Notice / Account Required Badge -->
+                                        <Border Grid.Column="1" CornerRadius="3" Padding="5,1" Margin="4,0" VerticalAlignment="Center"
+                                                Background="#332014" BorderBrush="#78350F" BorderThickness="1"
+                                                Visibility="{Binding HasNotice, Converter={StaticResource BoolToVis}}"
+                                                ToolTip="{Binding NoticeText}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="{StaticResource GeomInfo}" Stroke="#FBBF24" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" Margin="0,0,3,0" VerticalAlignment="Center" />
+                                                <TextBlock Text="نیازمند اشتراک و ثبت آی‌پی" FontSize="9" Foreground="#FDE68A" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" CornerRadius="3" Padding="5,1" VerticalAlignment="Center"
                                                 Background="{Binding TypeBadgeBg}" BorderBrush="{Binding TypeBadgeBorder}" BorderThickness="1">
                                             <TextBlock Text="{Binding TypeBadgeText}" FontSize="9.5" Foreground="{Binding TypeBadgeForeground}" />
                                         </Border>
@@ -356,11 +396,17 @@
                                                 <TextBlock Text="{Binding Primary, StringFormat='DNS 1: {0}'}" FontFamily="Consolas" FontSize="10.5" Foreground="#93C5FD" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding Secondary, StringFormat='DNS 2: {0}'}" FontFamily="Consolas" FontSize="10.5" Foreground="{StaticResource TextSecondary}" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
-
-                                            <Button Grid.Column="1" Width="20" Height="20" Style="{StaticResource FluentButtonStyle}" Padding="0"
-                                                    Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آدرس‌های DNS" VerticalAlignment="Center">
-                                                <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
-                                            </Button>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Width="20" Height="20" Style="{StaticResource FluentButtonStyle}" Padding="0"
+                                                        Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آدرس‌های DNS" VerticalAlignment="Center">
+                                                    <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                                </Button>
+                                                <Button Width="20" Height="20" Style="{StaticResource FluentButtonStyle}" Padding="0" Margin="4,0,0,0"
+                                                        Click="BtnDeleteCustomDns_Click" Tag="{Binding}" ToolTip="حذف این کارت سفارشی" VerticalAlignment="Center"
+                                                        Visibility="{Binding CanDelete, Converter={StaticResource BoolToVis}}">
+                                                    <Path Data="{StaticResource GeomTrash}" Stroke="#F87171" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
 
@@ -430,7 +476,7 @@
                             <ColumnDefinition Width="85" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="90" />
-                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="58" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="#" Foreground="{StaticResource TextTertiary}" FontSize="11" FontWeight="SemiBold" />
                         <TextBlock Grid.Column="1" Text="نام سرویس" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" />
@@ -475,10 +521,18 @@
                                             <ColumnDefinition Width="85" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="90" />
-                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="58" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Id}" Foreground="{StaticResource TextTertiary}" FontSize="11" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <Border CornerRadius="3" Padding="4,1" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                    Background="#332014" BorderBrush="#78350F" BorderThickness="1"
+                                                    Visibility="{Binding HasNotice, Converter={StaticResource BoolToVis}}"
+                                                    ToolTip="{Binding NoticeText}">
+                                                <Path Data="{StaticResource GeomInfo}" Stroke="#FBBF24" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                            </Border>
+                                        </StackPanel>
                                         <Border Grid.Column="2" Background="{Binding TypeBadgeBg}" BorderBrush="{Binding TypeBadgeBorder}" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Left" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding TypeBadgeText}" FontSize="9.5" Foreground="{Binding TypeBadgeForeground}" />
                                         </Border>
@@ -507,9 +561,14 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                        <Button Grid.Column="9" Width="22" Height="22" Style="{StaticResource FluentButtonStyle}" Padding="0" Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آی‌پی‌ها" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                            <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
-                                        </Button>
+                                        <StackPanel Grid.Column="9" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Button Width="22" Height="22" Style="{StaticResource FluentButtonStyle}" Padding="0" Click="BtnCopyIp_Click" Tag="{Binding}" ToolTip="کپی آی‌پی‌ها" VerticalAlignment="Center">
+                                                <Path Data="{StaticResource GeomCopy}" Stroke="#CCCCCC" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                            </Button>
+                                            <Button Width="22" Height="22" Style="{StaticResource FluentButtonStyle}" Padding="0" Margin="4,0,0,0" Click="BtnDeleteCustomDns_Click" Tag="{Binding}" ToolTip="حذف این کارت سفارشی" VerticalAlignment="Center" Visibility="{Binding CanDelete, Converter={StaticResource BoolToVis}}">
+                                                <Path Data="{StaticResource GeomTrash}" Stroke="#F87171" StrokeThickness="1.2" Width="9" Height="9" Stretch="Uniform" />
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

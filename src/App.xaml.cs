@@ -16,7 +16,7 @@ namespace DNSChangerApp
                 args.Handled = true;
             };
 
-            const string appName = "DNSChanger_Arezoo_SingleInstanceMutex";
+            const string appName = "DNSChanger_Hadooshi_SingleInstanceMutex";
             _mutex = new Mutex(true, appName, out bool createdNew);
 
             if (!createdNew)

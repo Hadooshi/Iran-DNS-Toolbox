@@ -38,6 +38,15 @@ namespace DNSChangerApp.Services
         public string Message { get; set; } = string.Empty;
     }
 
+    public class CustomDnsRecord
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Primary { get; set; } = string.Empty;
+        public string Secondary { get; set; } = string.Empty;
+        public string Category { get; set; } = "تنظیم دستی کاربر";
+    }
+
     public static class NetworkService
     {
         private static readonly byte[] DnsQueryPayload = new byte[]
@@ -165,17 +174,12 @@ namespace DNSChangerApp.Services
 
         public static bool ApplyDns(string adapterName, string primary, string secondary)
         {
+            bool success = false;
             try
             {
-                string script;
-                if (string.IsNullOrWhiteSpace(secondary))
-                {
-                    script = $"Set-DnsClientServerAddress -InterfaceAlias '{adapterName}' -ServerAddresses ('{primary}')";
-                }
-                else
-                {
-                    script = $"Set-DnsClientServerAddress -InterfaceAlias '{adapterName}' -ServerAddresses ('{primary}', '{secondary}')";
-                }
+                string script = string.IsNullOrWhiteSpace(secondary)
+                    ? $"Set-DnsClientServerAddress -InterfaceAlias '{adapterName}' -ServerAddresses ('{primary}')"
+                    : $"Set-DnsClientServerAddress -InterfaceAlias '{adapterName}' -ServerAddresses ('{primary}', '{secondary}')";
 
                 var psi = new ProcessStartInfo
                 {
@@ -189,18 +193,53 @@ namespace DNSChangerApp.Services
 
                 using var proc = Process.Start(psi);
                 proc?.WaitForExit(5000);
+                success = (proc?.ExitCode == 0);
+            }
+            catch { }
 
-                FlushDns();
-                return proc?.ExitCode == 0;
-            }
-            catch
+            // Robust fallback to netsh if PowerShell method didn't succeed
+            if (!success)
             {
-                return false;
+                try
+                {
+                    var psi1 = new ProcessStartInfo
+                    {
+                        FileName = "netsh",
+                        Arguments = $"interface ip set dns name=\"{adapterName}\" static {primary} validate=no",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    using var p1 = Process.Start(psi1);
+                    p1?.WaitForExit(4000);
+                    success = (p1?.ExitCode == 0);
+
+                    if (!string.IsNullOrWhiteSpace(secondary))
+                    {
+                        var psi2 = new ProcessStartInfo
+                        {
+                            FileName = "netsh",
+                            Arguments = $"interface ip add dns name=\"{adapterName}\" {secondary} index=2 validate=no",
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+                        using var p2 = Process.Start(psi2);
+                        p2?.WaitForExit(4000);
+                    }
+                }
+                catch { }
             }
+
+            FlushDns();
+            return success;
         }
 
         public static bool ResetDnsToDhcp(string adapterName)
         {
+            bool success = false;
             try
             {
                 var psi = new ProcessStartInfo
@@ -215,14 +254,172 @@ namespace DNSChangerApp.Services
 
                 using var proc = Process.Start(psi);
                 proc?.WaitForExit(5000);
+                success = (proc?.ExitCode == 0);
+            }
+            catch { }
 
-                FlushDns();
-                return proc?.ExitCode == 0;
+            if (!success)
+            {
+                try
+                {
+                    var psiNetsh = new ProcessStartInfo
+                    {
+                        FileName = "netsh",
+                        Arguments = $"interface ip set dns name=\"{adapterName}\" dhcp",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    using var procNetsh = Process.Start(psiNetsh);
+                    procNetsh?.WaitForExit(4000);
+                    success = (procNetsh?.ExitCode == 0);
+                }
+                catch { }
+            }
+
+            FlushDns();
+            return success;
+        }
+
+        public static async Task<(bool Success, string Log)> ExecuteEmergencyNetworkResetAsync()
+        {
+            var sb = new System.Text.StringBuilder();
+            bool overallSuccess = true;
+
+            string[] commands = new[]
+            {
+                "ipconfig /flushdns",
+                "ipconfig /release",
+                "ipconfig /renew",
+                "netsh winsock reset",
+                "netsh int ip reset"
+            };
+
+            await Task.Run(() =>
+            {
+                foreach (var cmd in commands)
+                {
+                    try
+                    {
+                        var parts = cmd.Split(' ', 2);
+                        string exe = parts[0];
+                        string args = parts.Length > 1 ? parts[1] : "";
+
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = exe,
+                            Arguments = args,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+
+                        using var proc = Process.Start(psi);
+                        if (proc != null)
+                        {
+                            string output = proc.StandardOutput.ReadToEnd();
+                            string err = proc.StandardError.ReadToEnd();
+                            proc.WaitForExit(10000);
+
+                            sb.AppendLine($"[CMD] {cmd}");
+                            if (!string.IsNullOrWhiteSpace(output))
+                                sb.AppendLine(output.Trim());
+                            if (!string.IsNullOrWhiteSpace(err))
+                                sb.AppendLine("[ERR] " + err.Trim());
+
+                            if (proc.ExitCode != 0 && !cmd.Contains("/release") && !cmd.Contains("/renew"))
+                            {
+                                overallSuccess = false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        sb.AppendLine($"[EXCEPTION] {cmd}: {ex.Message}");
+                        overallSuccess = false;
+                    }
+                }
+            });
+
+            return (overallSuccess, sb.ToString());
+        }
+
+        public static string GetCustomDnsFilePath()
+        {
+            try
+            {
+                string localDir = AppDomain.CurrentDomain.BaseDirectory;
+                string localPath = Path.Combine(localDir, "custom_dns.json");
+                // Test write permissions
+                string testFile = Path.Combine(localDir, $".write_test_{Guid.NewGuid():N}.tmp");
+                File.WriteAllText(testFile, "test");
+                File.Delete(testFile);
+                return localPath;
             }
             catch
             {
-                return false;
+                string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "IranDnsToolbox");
+                if (!Directory.Exists(appData))
+                {
+                    Directory.CreateDirectory(appData);
+                }
+                return Path.Combine(appData, "custom_dns.json");
             }
+        }
+
+        public static List<DnsItem> LoadCustomDnsItems()
+        {
+            var list = new List<DnsItem>();
+            try
+            {
+                string path = GetCustomDnsFilePath();
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    var items = JsonSerializer.Deserialize<List<CustomDnsRecord>>(json);
+                    if (items != null)
+                    {
+                        foreach (var record in items)
+                        {
+                            list.Add(new DnsItem
+                            {
+                                Id = record.Id,
+                                Name = record.Name,
+                                Primary = record.Primary,
+                                Secondary = record.Secondary,
+                                Type = "Custom",
+                                Category = string.IsNullOrWhiteSpace(record.Category) ? "تنظیم دستی کاربر" : record.Category,
+                                IsCustom = true
+                            });
+                        }
+                    }
+                }
+            }
+            catch { }
+            return list;
+        }
+
+        public static void SaveCustomDnsItems(List<DnsItem> items)
+        {
+            try
+            {
+                string path = GetCustomDnsFilePath();
+                var records = items.Where(i => i.IsCustom).Select(i => new CustomDnsRecord
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Primary = i.Primary,
+                    Secondary = i.Secondary,
+                    Category = i.Category
+                }).ToList();
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(records, options);
+                File.WriteAllText(path, json);
+            }
+            catch { }
         }
 
         public static void FlushDns()
@@ -387,12 +584,16 @@ namespace DNSChangerApp.Services
         private static readonly System.Net.Http.HttpClient _httpClient = new(new System.Net.Http.SocketsHttpHandler
         {
             AllowAutoRedirect = true,
-            PooledConnectionLifetime = TimeSpan.FromMinutes(2),
-            ConnectTimeout = TimeSpan.FromSeconds(3)
+            PooledConnectionLifetime = TimeSpan.FromSeconds(5), // Short lifetime so DNS changes take effect immediately without caching sockets
+            PooledConnectionIdleTimeout = TimeSpan.FromSeconds(2),
+            ConnectTimeout = TimeSpan.FromSeconds(4)
         })
         {
-            Timeout = TimeSpan.FromSeconds(4),
-            DefaultRequestHeaders = { { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) DNSChanger/2026" } }
+            Timeout = TimeSpan.FromSeconds(5),
+            DefaultRequestHeaders =
+            {
+                { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" }
+            }
         };
 
         public static List<ServiceCheckItem> GetDefaultServiceChecks()
@@ -435,57 +636,109 @@ namespace DNSChangerApp.Services
             try
             {
                 var addrs = await Dns.GetHostAddressesAsync(item.HostName);
-                sw.Stop();
-                item.LatencyMs = sw.ElapsedMilliseconds;
-
-                if (addrs != null && addrs.Length > 0)
+                if (addrs == null || addrs.Length == 0)
                 {
-                    var ipv4 = addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addrs[0];
-                    string ipStr = ipv4.ToString();
-                    item.Ip = ipStr;
+                    sw.Stop();
+                    item.LatencyMs = sw.ElapsedMilliseconds;
+                    item.Resolved = false;
+                    item.Note = "عدم دریافت رکورد A از DNS";
+                    return;
+                }
 
-                    // Sinkhole detection (Iran ISP filtering or local sinkholes)
-                    if (ipStr.StartsWith("10.10.34.") || ipStr == "0.0.0.0" || ipStr.StartsWith("127."))
+                var ipv4 = addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addrs[0];
+                string ipStr = ipv4.ToString();
+                item.Ip = ipStr;
+
+                // Sinkhole detection (Iran ISP filtering or local sinkholes)
+                if (ipStr.StartsWith("10.10.34.") || ipStr == "0.0.0.0" || ipStr.StartsWith("127."))
+                {
+                    sw.Stop();
+                    item.LatencyMs = sw.ElapsedMilliseconds;
+                    item.Resolved = false;
+                    item.Note = "Sinkhole / مسدود در شبکه";
+                    return;
+                }
+
+                item.Resolved = true;
+
+                // Check for direct Google IP on Gemini:
+                // Anti-sanction DNS servers (Shecan, 403, Electro, etc.) always return their own reverse proxy IP
+                // (e.g. 94.130.*, 10.202.*, 78.157.*, 185.55.*).
+                // If it resolves to direct Google IP (142.251.*, 172.217.*, 216.58.*, 216.239.*),
+                // Gemini in Iran gives 403 Forbidden in browser!
+                bool isGeminiDirectGoogle = item.HostName.Equals("gemini.google.com", StringComparison.OrdinalIgnoreCase) &&
+                    (ipStr.StartsWith("142.251.") || ipStr.StartsWith("172.217.") || ipStr.StartsWith("216.58.") || ipStr.StartsWith("216.239."));
+
+                // Probe HTTP GET
+                try
+                {
+                    using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, item.Url);
+                    req.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    req.Headers.Add("Sec-Fetch-Dest", "document");
+                    req.Headers.Add("Sec-Fetch-Mode", "navigate");
+
+                    using var resp = await _httpClient.SendAsync(req, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+                    sw.Stop();
+                    item.LatencyMs = sw.ElapsedMilliseconds;
+                    item.StatusCode = (int)resp.StatusCode;
+
+                    if (isGeminiDirectGoogle)
                     {
-                        item.Resolved = false;
-                        item.Note = "Sinkhole / مسدود در شبکه";
+                        item.StatusCode = 403;
+                        item.HttpOk = false;
+                        item.Note = "سرویس تحریم است (IP مستقیم گوگل 403)";
                         return;
                     }
 
-                    item.Resolved = true;
-
-                    // Probe HTTP HEAD
-                    try
+                    if ((int)resp.StatusCode == 403 || (int)resp.StatusCode == 451)
                     {
-                        using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Head, item.Url);
-                        using var resp = await _httpClient.SendAsync(req, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
-                        item.StatusCode = (int)resp.StatusCode;
-                        if ((int)resp.StatusCode < 400)
+                        item.HttpOk = false;
+                        item.Note = "حل شد ولی IP تحریم است (403)";
+                    }
+                    else if ((int)resp.StatusCode < 400)
+                    {
+                        // Check if Google/Cloudflare returned a 200 header but an error 403 page
+                        bool is403Page = false;
+                        try
+                        {
+                            using var stream = await resp.Content.ReadAsStreamAsync();
+                            byte[] buffer = new byte[1024];
+                            int read = await stream.ReadAsync(buffer, 0, buffer.Length);
+                            if (read > 0)
+                            {
+                                string text = System.Text.Encoding.UTF8.GetString(buffer, 0, read);
+                                if (text.Contains("403. That's an error") || text.Contains("does not have permission"))
+                                {
+                                    is403Page = true;
+                                }
+                            }
+                        }
+                        catch { }
+
+                        if (is403Page)
+                        {
+                            item.StatusCode = 403;
+                            item.HttpOk = false;
+                            item.Note = "سرویس تحریم است (خطای 403)";
+                        }
+                        else
                         {
                             item.HttpOk = true;
                             item.Note = "در دسترس";
                         }
-                        else if ((int)resp.StatusCode == 403 || (int)resp.StatusCode == 451)
-                        {
-                            item.HttpOk = false;
-                            item.Note = "حل شد ولی IP تحریم است (403)";
-                        }
-                        else
-                        {
-                            item.HttpOk = false;
-                            item.Note = $"کد HTTP {(int)resp.StatusCode}";
-                        }
                     }
-                    catch
+                    else
                     {
                         item.HttpOk = false;
-                        item.Note = "دامنه حل شد؛ اتصال وب ناموفق";
+                        item.Note = $"کد HTTP {(int)resp.StatusCode}";
                     }
                 }
-                else
+                catch
                 {
-                    item.Resolved = false;
-                    item.Note = "عدم دریافت رکورد A از DNS";
+                    sw.Stop();
+                    item.LatencyMs = sw.ElapsedMilliseconds;
+                    item.HttpOk = false;
+                    item.Note = "دامنه حل شد؛ اتصال وب ناموفق";
                 }
             }
             catch (Exception ex)

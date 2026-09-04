@@ -9,11 +9,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>DNSChanger</AssemblyName>
     <RootNamespace>DNSChangerApp</RootNamespace>
-    <Version>2.0.0</Version>
-    <Authors>Arezoo / Hadooshi</Authors>
-    <Company>Arezoo</Company>
-    <Product>1-Click DNS Changer &amp; Anti-Sanction</Product>
-    <Description>Fast 1-Click DNS Changer &amp; Live Anti-Sanction Verifier for Windows 10/11</Description>
+    <Version>2.2.0</Version>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <FileVersion>2.2.0.0</FileVersion>
+    <Authors>Hadooshi</Authors>
+    <Company>Hadooshi</Company>
+    <Product>Iran DNS Toolbox</Product>
+    <Description>Windows 10/11 DNS Changer &amp; Anti-Sanction Toolbox by Hadooshi</Description>
+    <Copyright>Copyright © 2026 Hadooshi</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

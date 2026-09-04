@@ -20,6 +20,10 @@ namespace DNSChangerApp.Models
         public string Secondary { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public bool IsCustom { get; set; } = false;
+        public bool HasNotice { get; set; } = false;
+        public string NoticeText { get; set; } = string.Empty;
+        public bool CanDelete => IsCustom;
 
         public long Ping1
         {

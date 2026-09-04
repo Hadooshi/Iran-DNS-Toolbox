@@ -37,6 +37,8 @@
         <PathGeometry x:Key="GeomCheck" Figures="M 2,7 L 6,11 L 14,3" />
         <PathGeometry x:Key="GeomCopy" Figures="M 4,4 L 11,4 L 11,14 L 4,14 Z M 6,2 L 13,2 L 13,12" />
         <PathGeometry x:Key="GeomPlus" Figures="M 8,2 L 8,14 M 2,8 L 14,8" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
         <PathGeometry x:Key="GeomClose" Figures="M 3,3 L 11,11 M 11,3 L 3,11" />
         <PathGeometry x:Key="GeomMinimize" Figures="M 2,7 L 12,7" />
         <PathGeometry x:Key="GeomMaximize" Figures="M 2,2 L 12,2 L 12,12 L 2,12 Z" />
@@ -44,6 +46,12 @@
         <PathGeometry x:Key="GeomNetwork" Figures="M 1,11 L 15,11 M 8,11 L 8,7 M 4,7 L 12,7 L 12,3 L 4,3 Z M 2,11 L 2,14 M 14,11 L 14,14" />
         <PathGeometry x:Key="GeomCardView" Figures="M 2,2 L 6,2 L 6,6 L 2,6 Z M 9,2 L 13,2 L 13,6 L 9,6 Z M 2,9 L 6,9 L 6,13 L 2,13 Z M 9,9 L 13,9 L 13,13 L 9,13 Z" />
         <PathGeometry x:Key="GeomTableView" Figures="M 2,3 L 14,3 M 2,7 L 14,7 M 2,11 L 14,11 M 2,2 L 2,14 M 14,2 L 14,14" />
+        <PathGeometry x:Key="GeomTrash" Figures="M 3,4 L 13,4 M 5,4 L 5,14 L 11,14 L 11,4 M 6,2 L 10,2 L 10,4 L 6,4 Z M 7,7 L 7,11 M 9,7 L 9,11" />
+        <PathGeometry x:Key="GeomWrench" Figures="M 13.5,4.5 C 12,3 9.5,3.2 8.2,4.8 L 3,10 L 6,13 L 11.2,7.8 C 12.8,6.5 13,4 11.5,2.5 M 10,4 L 12,6" />
+        <PathGeometry x:Key="GeomAlert" Figures="M 8,1 L 15,14 L 1,14 Z M 8,5 L 8,9 M 8,11 L 8,12" />
+        <PathGeometry x:Key="GeomInfo" Figures="M 8,1 A 7,7 0 1 0 8,15 A 7,7 0 1 0 8,1 Z M 8,4 L 8,5 M 8,7 L 8,11" />
+        <PathGeometry x:Key="GeomGitHub" Figures="M 8,0 C 3.58,0 0,3.58 0,8 C 0,11.54 2.29,14.53 5.47,15.59 C 5.87,15.66 6.02,15.42 6.02,15.21 C 6.02,15.02 6.01,14.39 6.01,13.72 C 3.79,14.2 3.32,12.64 3.32,12.64 C 2.95,11.72 2.43,11.47 2.43,11.47 C 1.71,10.97 2.48,10.98 2.48,10.98 C 3.28,11.04 3.7,11.81 3.7,11.81 C 4.41,13.02 5.56,12.67 6.01,12.47 C 6.08,11.96 6.29,11.61 6.51,11.41 C 4.73,11.21 2.87,10.52 2.87,7.45 C 2.87,6.58 3.18,5.86 3.69,5.3 C 3.61,5.1 3.33,4.28 3.77,3.18 C 3.77,3.18 4.44,2.97 5.97,4.01 C 6.61,3.83 7.29,3.74 7.97,3.74 C 8.65,3.74 9.33,3.83 9.97,4.01 C 11.5,2.97 12.17,3.18 12.17,3.18 C 12.61,4.28 12.33,5.1 12.25,5.3 C 12.77,5.86 13.07,6.58 13.07,7.45 C 13.07,10.53 11.2,11.2 9.42,11.4 C 9.71,11.65 9.96,12.14 9.96,12.89 C 9.96,13.97 9.95,14.84 9.95,15.21 C 9.95,15.42 10.1,15.67 10.5,15.59 C 13.68,14.53 16,11.53 16,8 C 16,3.58 12.42,0 8,0 Z" />
+        <PathGeometry x:Key="GeomSort" Figures="M 3,4 L 13,4 M 3,8 L 10,8 M 3,12 L 7,12" />
 
         <!-- Windows Native Titlebar Button Style -->
         <Style x:Key="CaptionBtnStyle" TargetType="Button">
@@ -158,6 +166,62 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBluePressed}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Emergency Reset Button Style (Subtle Amber/Orange Danger) -->
+        <Style x:Key="FluentEmergencyButtonStyle" TargetType="Button" BasedOn="{StaticResource FluentButtonStyle}">
+            <Setter Property="Background" Value="#2E1D19" />
+            <Setter Property="BorderBrush" Value="#5C3322" />
+            <Setter Property="Foreground" Value="#FDBA74" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#45271E" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="#D97706" />
+                                <Setter Property="Foreground" Value="#FFEDD5" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#221410" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Fluent Dark RTL ToolTip Style -->
+        <Style TargetType="ToolTip">
+            <Setter Property="Background" Value="#252525" />
+            <Setter Property="Foreground" Value="#F3F4F6" />
+            <Setter Property="BorderBrush" Value="#4C4C4C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FlowDirection" Value="RightToLeft" />
+            <Setter Property="FontFamily" Value="Segoe UI, Tahoma" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
