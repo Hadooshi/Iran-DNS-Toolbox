@@ -3,7 +3,7 @@
 <div align="center">
 
 [![Windows](https://img.shields.io/badge/OS-Windows%2010%20%2F%2011-blue.svg?style=flat-square&logo=windows)](https://microsoft.com)
-[![Version](https://img.shields.io/badge/Version-2.2.0-0078D4.svg?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
+[![Version](https://img.shields.io/badge/Version-2.2.1-0078D4.svg?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
 [![Author](https://img.shields.io/badge/Author-Hadooshi-blueviolet.svg?style=flat-square&logo=github)](https://github.com/Hadooshi)
 [![.NET](https://img.shields.io/badge/.NET-6.0%20WPF-512BD4.svg?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
 [![Download Latest Release](https://img.shields.io/badge/Download-DNSChanger.exe-success?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
@@ -38,7 +38,9 @@
 
 * 📁 **تک‌فایل و کاملاً پرتابل (`DNSChanger.exe`):** بدون نیاز به نصب؛ تنها با دابل‌کلیک در هر پوشه‌ای اجرا می‌شود (حجم بسیار سبک کمتر از ۴۰۰ کیلوبایت).
 * 👑 **درخواست خودکار مجوز Administrator:** مجهز به مانیفست رسمی ویندوز جهت اعمال بی‌نقص تنظیمات شبکه بدون باز شدن پنجره سیاه کنسول (`cmd.exe`).
-* 🎨 **طراحی اصیل و مدرن Fluent Dark** با نمایش بج نسخه `v2.2.0` و دسترسی سریع.
+* 🎨 **طراحی اصیل و مدرن Fluent Dark** با نمایش بج نسخه `v2.2.1` و دسترسی سریع.
+* 🖥️ **سازگاری کامل با فول‌اسکرین و تسک‌بار ویندوز:** عدم پوشاندن تسک‌بار در حالت ماکسیمایز با هوک نیتیو `WM_GETMINMAXINFO` و قابلیت تغییر ابعاد پنجره از تمام لبه‌ها.
+* 📐 **گرید واکنش‌گرا و فیت کامل کارت‌ها (`UniformGrid`):** حذف کامل هرگونه فضای خالی در سمت راست و کشیدگی متقارن و یکنواخت کارت‌ها در هر اندازه پنجره یا تمام‌صفحه.
 * 🔀 **مرتب‌سازی هوشمند سرورها (`Smart Sorting`):** چینش سریع سرورها با ۵ حالت کاربردی:
   * **⚡ کمترین تاخیر (پینگ):** انتقال سریع‌ترین و پایدارترین سرورها به صدر لیست پس از تست تاخیر.
   * **📶 بیشترین تاخیر (پینگ):** تفکیک سرورهای با تاخیر یا پینگ بالا.

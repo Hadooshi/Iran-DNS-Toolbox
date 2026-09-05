@@ -1,21 +1,128 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using DNSChangerApp.Models;
 using DNSChangerApp.Services;
 
 namespace DNSChangerApp
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private int _preferredColumns = 4;
+        private int _gridColumns = 4;
+        public int GridColumns
+        {
+            get => _gridColumns;
+            set
+            {
+                if (_gridColumns != value)
+                {
+                    _gridColumns = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            HwndSource? source = HwndSource.FromHwnd(handle);
+            source?.AddHook(WindowProc);
+        }
+
+        private const int WM_GETMINMAXINFO = 0x0024;
+        private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+            public POINT(int x, int y) { X = x; Y = y; }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public class MONITORINFO
+        {
+            public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+            public RECT rcMonitor = new RECT();
+            public RECT rcWork = new RECT();
+            public int dwFlags = 0;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, [In, Out] MONITORINFO lpmi);
+
+        private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_GETMINMAXINFO)
+            {
+                WmGetMinMaxInfo(hwnd, lParam);
+                handled = true;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
+        {
+            MINMAXINFO mmi = (MINMAXINFO)Marshal.PtrToStructure(lParam, typeof(MINMAXINFO))!;
+            IntPtr hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hMonitor != IntPtr.Zero)
+            {
+                MONITORINFO mi = new MONITORINFO();
+                if (GetMonitorInfo(hMonitor, mi))
+                {
+                    mmi.ptMaxPosition.X = Math.Abs(mi.rcWork.Left - mi.rcMonitor.Left);
+                    mmi.ptMaxPosition.Y = Math.Abs(mi.rcWork.Top - mi.rcMonitor.Top);
+                    mmi.ptMaxSize.X = Math.Abs(mi.rcWork.Right - mi.rcWork.Left);
+                    mmi.ptMaxSize.Y = Math.Abs(mi.rcWork.Bottom - mi.rcWork.Top);
+                }
+            }
+            Marshal.StructureToPtr(mmi, lParam, true);
+        }
+
         private readonly List<DnsItem> _masterDnsList = new();
         private readonly ObservableCollection<DnsItem> _displayedDnsList = new();
 
@@ -42,6 +149,7 @@ namespace DNSChangerApp
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            SetColumns(_preferredColumns);
             await RefreshAdaptersAsync();
             await RunTestAllPingsAsync();
         }
@@ -51,11 +159,11 @@ namespace DNSChangerApp
             _masterDnsList.Clear();
 
             // 1. Iranian Anti-Sanction & Gaming DNS (14 Servers)
-            _masterDnsList.Add(new DnsItem { Id = 1, Name = "شکن (Shecan)", Primary = "178.22.122.100", Secondary = "185.51.200.2", Type = "Anti-Sanction", Category = "وبسایت‌ها، استیم و لانچرهای بازی" });
+            _masterDnsList.Add(new DnsItem { Id = 1, Name = "شکن", Primary = "178.22.122.100", Secondary = "185.51.200.2", Type = "Anti-Sanction", Category = "وبسایت‌ها، استیم و لانچرهای بازی" });
             _masterDnsList.Add(new DnsItem
             {
                 Id = 50,
-                Name = "شکن حرفه‌ای (Shecan Pro)",
+                Name = "شکن حرفه‌ای",
                 Primary = "178.22.122.101",
                 Secondary = "185.51.200.1",
                 Type = "Anti-Sanction",
@@ -63,24 +171,24 @@ namespace DNSChangerApp
                 HasNotice = true,
                 NoticeText = "این سرور نیازمند اشتراک فعال شکن حرفه‌ای است. با هر بار تغییر اینترنت یا خاموش و روشن شدن مودم، باید نشانی آی‌پی جدید خود را در پنل کاربری سایت شکن ثبت و اعلام نمایید."
             });
-            _masterDnsList.Add(new DnsItem { Id = 2, Name = "رادار گیم (Radar Game)", Primary = "10.202.10.10", Secondary = "10.202.10.11", Type = "Anti-Sanction", Category = "گیمینگ و کاهش پینگ (Xbox & PC)" });
-            _masterDnsList.Add(new DnsItem { Id = 3, Name = "الکترو (Electro)", Primary = "78.157.42.100", Secondary = "78.157.42.101", Type = "Anti-Sanction", Category = "مچمیکینگ استیم، پلی‌استیشن و آنلاین" });
-            _masterDnsList.Add(new DnsItem { Id = 4, Name = "بگذر سرور ۱ (Begzar 1)", Primary = "185.55.226.26", Secondary = "185.55.225.25", Type = "Anti-Sanction", Category = "دانلود بازی و لودینگ وب PC" });
-            _masterDnsList.Add(new DnsItem { Id = 5, Name = "بگذر سرور ۲ (Begzar 2)", Primary = "185.55.224.24", Secondary = "185.55.225.25", Type = "Anti-Sanction", Category = "دانلود بازی و لودینگ وب PC" });
-            _masterDnsList.Add(new DnsItem { Id = 6, Name = "۴۰۳ آنلاین (403 Online)", Primary = "10.202.10.202", Secondary = "10.202.10.102", Type = "Anti-Sanction", Category = "ابزارهای برنامه‌نویسی و کتابخانه‌ها" });
-            _masterDnsList.Add(new DnsItem { Id = 7, Name = "وانیلا (Vanilla)", Primary = "10.139.177.21", Secondary = "10.139.177.22", Type = "Anti-Sanction", Category = "هوش مصنوعی، دانلود و بازی‌ها" });
-            _masterDnsList.Add(new DnsItem { Id = 8, Name = "هاست ایران ۱ (HostIran)", Primary = "172.29.0.100", Secondary = "172.29.2.100", Type = "Anti-Sanction", Category = "وبسایت‌ها و اپلیکیشن‌های خارجی" });
-            _masterDnsList.Add(new DnsItem { Id = 9, Name = "هاست ایران ۲ (HostIran)", Primary = "172.28.2.100", Secondary = "179.29.0.100", Type = "Anti-Sanction", Category = "وبسایت‌ها و اپلیکیشن‌های ابری" });
-            _masterDnsList.Add(new DnsItem { Id = 10, Name = "شلتر (Shelter)", Primary = "94.103.125.157", Secondary = "94.103.125.158", Type = "Anti-Sanction", Category = "پل ارتباطی بازی‌های آنلاین و پینگ" });
-            _masterDnsList.Add(new DnsItem { Id = 11, Name = "بشکن (Beshkan)", Primary = "181.41.194.177", Secondary = "181.41.194.186", Type = "Anti-Sanction", Category = "رفع تحریم Adobe, Nvidia, Unity, Intel" });
-            _masterDnsList.Add(new DnsItem { Id = 28, Name = "پارس آنلاین (Pars Online)", Primary = "91.99.101.12", Secondary = "", Type = "Anti-Sanction", Category = "ریزالور ضد تحریم پارس آنلاین" });
-            _masterDnsList.Add(new DnsItem { Id = 29, Name = "ابر باران (AbrBaran IDC)", Primary = "172.16.1.100", Secondary = "172.16.2.100", Type = "Anti-Sanction", Category = "ضد تحریم کلاینت‌های دیتاسنتر" });
+            _masterDnsList.Add(new DnsItem { Id = 2, Name = "رادار گیم", Primary = "10.202.10.10", Secondary = "10.202.10.11", Type = "Anti-Sanction", Category = "گیمینگ و کاهش پینگ ویژه کنسول و بازی" });
+            _masterDnsList.Add(new DnsItem { Id = 3, Name = "الکترو", Primary = "78.157.42.100", Secondary = "78.157.42.101", Type = "Anti-Sanction", Category = "مچمیکینگ استیم، پلی‌استیشن و آنلاین" });
+            _masterDnsList.Add(new DnsItem { Id = 4, Name = "بگذر سرور ۱", Primary = "185.55.226.26", Secondary = "185.55.225.25", Type = "Anti-Sanction", Category = "دانلود بازی و لودینگ وب PC" });
+            _masterDnsList.Add(new DnsItem { Id = 5, Name = "بگذر سرور ۲", Primary = "185.55.224.24", Secondary = "185.55.225.25", Type = "Anti-Sanction", Category = "دانلود بازی و لودینگ وب PC" });
+            _masterDnsList.Add(new DnsItem { Id = 6, Name = "۴۰۳ آنلاین", Primary = "10.202.10.202", Secondary = "10.202.10.102", Type = "Anti-Sanction", Category = "ابزارهای برنامه‌نویسی و کتابخانه‌ها" });
+            _masterDnsList.Add(new DnsItem { Id = 7, Name = "وانیلا", Primary = "10.139.177.21", Secondary = "10.139.177.22", Type = "Anti-Sanction", Category = "هوش مصنوعی، دانلود و بازی‌ها" });
+            _masterDnsList.Add(new DnsItem { Id = 8, Name = "هاست ایران ۱", Primary = "172.29.0.100", Secondary = "172.29.2.100", Type = "Anti-Sanction", Category = "وبسایت‌ها و اپلیکیشن‌های خارجی" });
+            _masterDnsList.Add(new DnsItem { Id = 9, Name = "هاست ایران ۲", Primary = "172.28.2.100", Secondary = "179.29.0.100", Type = "Anti-Sanction", Category = "وبسایت‌ها و اپلیکیشن‌های ابری" });
+            _masterDnsList.Add(new DnsItem { Id = 10, Name = "شلتر", Primary = "94.103.125.157", Secondary = "94.103.125.158", Type = "Anti-Sanction", Category = "پل ارتباطی بازی‌های آنلاین و پینگ" });
+            _masterDnsList.Add(new DnsItem { Id = 11, Name = "بشکن", Primary = "181.41.194.177", Secondary = "181.41.194.186", Type = "Anti-Sanction", Category = "رفع تحریم Adobe, Nvidia, Unity, Intel" });
+            _masterDnsList.Add(new DnsItem { Id = 28, Name = "پارس آنلاین", Primary = "91.99.101.12", Secondary = "", Type = "Anti-Sanction", Category = "ریزالور ضد تحریم پارس آنلاین" });
+            _masterDnsList.Add(new DnsItem { Id = 29, Name = "ابر باران", Primary = "172.16.1.100", Secondary = "172.16.2.100", Type = "Anti-Sanction", Category = "ضد تحریم کلاینت‌های دیتاسنتر" });
 
             // 2. Global Public Backbone DNS (18 Servers)
             _masterDnsList.Add(new DnsItem { Id = 12, Name = "Cloudflare", Primary = "1.1.1.1", Secondary = "1.0.0.1", Type = "Global", Category = "سریع‌ترین پاسخگویی و پایداری وب" });
             _masterDnsList.Add(new DnsItem { Id = 13, Name = "Google Public", Primary = "8.8.8.8", Secondary = "8.8.4.4", Type = "Global", Category = "حداکثر سازگاری با انواع ISP و وب" });
             _masterDnsList.Add(new DnsItem { Id = 14, Name = "Google / Level3", Primary = "4.2.2.4", Secondary = "4.2.2.2", Type = "Global", Category = "پایداری فوق‌العاده در مسیریابی شبکه" });
-            _masterDnsList.Add(new DnsItem { Id = 15, Name = "OpenDNS (Cisco)", Primary = "208.67.222.222", Secondary = "208.67.220.220", Type = "Global", Category = "امنیت سایبری و پالایش شبکه سیسکو" });
+            _masterDnsList.Add(new DnsItem { Id = 15, Name = "OpenDNS Cisco", Primary = "208.67.222.222", Secondary = "208.67.220.220", Type = "Global", Category = "امنیت سایبری و پالایش شبکه سیسکو" });
             _masterDnsList.Add(new DnsItem { Id = 16, Name = "Quad9", Primary = "9.9.9.9", Secondary = "149.112.112.112", Type = "Global", Category = "حفظ حریم خصوصی و ضد فیشینگ" });
             _masterDnsList.Add(new DnsItem { Id = 17, Name = "NTT Asia", Primary = "129.250.35.250", Secondary = "129.250.35.251", Type = "Global", Category = "مسیریابی بهینه سرورهای قاره آسیا" });
             _masterDnsList.Add(new DnsItem { Id = 18, Name = "Level3 Main", Primary = "209.244.0.3", Secondary = "209.244.0.4", Type = "Global", Category = "ستون فقرات زیرساخت بین‌المللی" });
@@ -97,11 +205,11 @@ namespace DNSChangerApp
             _masterDnsList.Add(new DnsItem { Id = 47, Name = "Neustar UltraDNS", Primary = "156.154.70.1", Secondary = "156.154.71.1", Type = "Global", Category = "زیرساخت پایدار سازمانی آمریکا" });
 
             // 3. Privacy & Anti-Censorship DNS (6 Servers)
-            _masterDnsList.Add(new DnsItem { Id = 31, Name = "مولواد (Mullvad)", Primary = "194.242.2.2", Secondary = "", Type = "Privacy", Category = "بدون لاگ و حداکثر حریم خصوصی" });
-            _masterDnsList.Add(new DnsItem { Id = 32, Name = "UncensoredDNS", Primary = "91.239.100.100", Secondary = "89.233.43.71", Type = "Privacy", Category = "اینترنت آزاد و بدون سانسور (دانمارک)" });
-            _masterDnsList.Add(new DnsItem { Id = 33, Name = "LibreDNS", Primary = "116.202.176.26", Secondary = "", Type = "Privacy", Category = "حریم خصوصی و امنیت بدون لاگ (آلمان)" });
+            _masterDnsList.Add(new DnsItem { Id = 31, Name = "مولواد", Primary = "194.242.2.2", Secondary = "", Type = "Privacy", Category = "بدون لاگ و حداکثر حریم خصوصی" });
+            _masterDnsList.Add(new DnsItem { Id = 32, Name = "UncensoredDNS", Primary = "91.239.100.100", Secondary = "89.233.43.71", Type = "Privacy", Category = "اینترنت آزاد و بدون سانسور دانمارک" });
+            _masterDnsList.Add(new DnsItem { Id = 33, Name = "LibreDNS", Primary = "116.202.176.26", Secondary = "", Type = "Privacy", Category = "حریم خصوصی و امنیت بدون لاگ آلمان" });
             _masterDnsList.Add(new DnsItem { Id = 34, Name = "DNS.SB", Primary = "185.222.222.222", Secondary = "45.11.45.11", Type = "Privacy", Category = "ضد سانسور با پشتیبانی از DNSSEC" });
-            _masterDnsList.Add(new DnsItem { Id = 35, Name = "AdGuard Non-filtering", Primary = "94.140.14.140", Secondary = "94.140.14.141", Type = "Privacy", Category = "ادگارد بدون فیلتر (حداکثر سرعت)" });
+            _masterDnsList.Add(new DnsItem { Id = 35, Name = "AdGuard Non-filtering", Primary = "94.140.14.140", Secondary = "94.140.14.141", Type = "Privacy", Category = "ادگارد بدون فیلتر با حداکثر سرعت" });
             _masterDnsList.Add(new DnsItem { Id = 40, Name = "Quad9 No-Filter", Primary = "9.9.9.10", Secondary = "149.112.112.10", Type = "Privacy", Category = "سرور پرسرعت Quad9 بدون فیلترینگ" });
 
             // 4. Family & Malware Protection DNS (8 Servers)
@@ -114,9 +222,9 @@ namespace DNSChangerApp
             _masterDnsList.Add(new DnsItem { Id = 43, Name = "CleanBrowsing Family", Primary = "185.228.168.168", Secondary = "185.228.169.168", Type = "Family", Category = "بالاترین سطح محافظت خانواده" });
 
             // 5. Domestic ISP (3 Servers)
-            _masterDnsList.Add(new DnsItem { Id = 26, Name = "پیشگامان (Pishgaman)", Primary = "5.202.100.100", Secondary = "5.202.100.101", Type = "ISP", Category = "شبکه پیشگامان ADSL و فیبرنوری" });
-            _masterDnsList.Add(new DnsItem { Id = 27, Name = "شاتل (Shatel ADSL)", Primary = "85.15.1.14", Secondary = "85.15.1.15", Type = "ISP", Category = "شبکه ADSL و اینترنت شاتل" });
-            _masterDnsList.Add(new DnsItem { Id = 30, Name = "آسیاتک (AsiaTech)", Primary = "194.36.174.161", Secondary = "178.22.122.100", Type = "ISP", Category = "مشترکین آسیاتک و پینگ پایین" });
+            _masterDnsList.Add(new DnsItem { Id = 26, Name = "پیشگامان", Primary = "5.202.100.100", Secondary = "5.202.100.101", Type = "ISP", Category = "شبکه پیشگامان ADSL و فیبرنوری" });
+            _masterDnsList.Add(new DnsItem { Id = 27, Name = "شاتل", Primary = "85.15.1.14", Secondary = "85.15.1.15", Type = "ISP", Category = "شبکه ADSL و اینترنت شاتل" });
+            _masterDnsList.Add(new DnsItem { Id = 30, Name = "آسیاتک", Primary = "194.36.174.161", Secondary = "178.22.122.100", Type = "ISP", Category = "مشترکین آسیاتک و پینگ پایین" });
 
             // 6. User Custom DNS (Persisted from custom_dns.json)
             var savedCustoms = NetworkService.LoadCustomDnsItems();
@@ -132,13 +240,36 @@ namespace DNSChangerApp
         private void UpdateTabCounters()
         {
             if (TabAll == null) return;
-            TabAll.Content = $"همه سرورها ({_masterDnsList.Count})";
-            TabAntiSanction.Content = $"رفع تحریم ({_masterDnsList.Count(d => d.Type == "Anti-Sanction")})";
-            TabGlobal.Content = $"عمومی جهانی ({_masterDnsList.Count(d => d.Type == "Global")})";
-            TabPrivacy.Content = $"حریم خصوصی ({_masterDnsList.Count(d => d.Type == "Privacy")})";
-            TabFamily.Content = $"خانواده و امنیت ({_masterDnsList.Count(d => d.Type == "Family")})";
-            TabIsp.Content = $"داخلی ISP ({_masterDnsList.Count(d => d.Type == "ISP")})";
-            TabCustom.Content = $"سفارشی کاربر ({_masterDnsList.Count(d => d.IsCustom)})";
+            UpdateTabHeader(TabAll, "همه سرورها", _masterDnsList.Count);
+            UpdateTabHeader(TabAntiSanction, "رفع تحریم", _masterDnsList.Count(d => d.Type == "Anti-Sanction"));
+            UpdateTabHeader(TabGlobal, "عمومی جهانی", _masterDnsList.Count(d => d.Type == "Global"));
+            UpdateTabHeader(TabPrivacy, "حریم خصوصی", _masterDnsList.Count(d => d.Type == "Privacy"));
+            UpdateTabHeader(TabFamily, "خانواده و امنیت", _masterDnsList.Count(d => d.Type == "Family"));
+            UpdateTabHeader(TabIsp, "داخلی ISP", _masterDnsList.Count(d => d.Type == "ISP"));
+            UpdateTabHeader(TabCustom, "سفارشی کاربر", _masterDnsList.Count(d => d.IsCustom));
+        }
+
+        private static void UpdateTabHeader(RadioButton tab, string title, int count)
+        {
+            var sp = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            sp.Children.Add(new TextBlock { Text = title, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
+            var badge = new Border
+            {
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#292929")),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(6, 1, 6, 1),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            badge.Child = new TextBlock
+            {
+                Text = count.ToString(),
+                FontSize = 10.5,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#AAAAAA")),
+                FontFamily = new FontFamily("Segoe UI, Consolas")
+            };
+            sp.Children.Add(badge);
+            tab.Content = sp;
         }
 
         private async Task RefreshAdaptersAsync()
@@ -223,7 +354,7 @@ namespace DNSChangerApp
                 {
                     if (currentIps.Contains("5.200.200.200"))
                     {
-                        TxtActiveBadge.Text = "مخابرات ایران (TCI)";
+                        TxtActiveBadge.Text = "مخابرات ایران";
                     }
                     else
                     {
@@ -251,9 +382,32 @@ namespace DNSChangerApp
             await Task.WhenAll(tasks);
 
             _isTestingAll = false;
-            ShowToast("سنجش سرعت و وضعیت تمام ۴۷ سرور با موفقیت پایان یافت.");
+            ShowToast($"سنجش سرعت و وضعیت تمام {_masterDnsList.Count} سرور با موفقیت پایان یافت.");
             ApplyFilterAndSearch();
         }
+
+        private static string GetSearchAliases(int id) => id switch
+        {
+            1 => "shecan",
+            50 => "shecan pro",
+            2 => "radar game xbox pc",
+            3 => "electro",
+            4 => "begzar 1",
+            5 => "begzar 2",
+            6 => "403 online",
+            7 => "vanilla",
+            8 => "hostiran 1",
+            9 => "hostiran 2",
+            10 => "shelter",
+            11 => "beshkan",
+            28 => "pars online",
+            29 => "abrbaran",
+            26 => "pishgaman",
+            27 => "shatel",
+            30 => "asiatech",
+            31 => "mullvad",
+            _ => string.Empty
+        };
 
         private void ApplyFilterAndSearch()
         {
@@ -280,7 +434,8 @@ namespace DNSChangerApp
                        item.Category.ToLower().Contains(query) ||
                        item.Primary.Contains(query) ||
                        item.Secondary.Contains(query) ||
-                       item.Type.ToLower().Contains(query);
+                       item.Type.ToLower().Contains(query) ||
+                       GetSearchAliases(item.Id).Contains(query);
             });
 
             IEnumerable<DnsItem> sorted = _activeSort switch
@@ -636,9 +791,19 @@ namespace DNSChangerApp
             if (e.ClickCount == 2)
             {
                 BtnMaximize_Click(sender, e);
+                return;
             }
-            else if (e.ButtonState == MouseButtonState.Pressed)
+
+            if (e.ButtonState == MouseButtonState.Pressed)
             {
+                if (WindowState == WindowState.Maximized)
+                {
+                    Point screenPoint = PointToScreen(e.GetPosition(this));
+                    double relativeX = e.GetPosition(this).X / ActualWidth;
+                    WindowState = WindowState.Normal;
+                    Left = screenPoint.X - (ActualWidth * relativeX);
+                    Top = screenPoint.Y - 18;
+                }
                 DragMove();
             }
         }
@@ -666,16 +831,37 @@ namespace DNSChangerApp
 
         private void BtnMaximize_Click(object sender, RoutedEventArgs e)
         {
+            WindowState = (WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+        }
+
+        private void MainWindow_StateChanged(object? sender, EventArgs e)
+        {
             if (WindowState == WindowState.Maximized)
             {
-                WindowState = WindowState.Normal;
-                PathMaximize.Data = (Geometry)FindResource("GeomMaximize");
+                if (RootBorder != null)
+                {
+                    RootBorder.BorderThickness = new Thickness(0);
+                    RootBorder.Margin = new Thickness(0);
+                }
+                if (PathMaximize != null)
+                    PathMaximize.Data = (Geometry)FindResource("GeomRestore");
+                if (BtnMaximize != null)
+                    BtnMaximize.ToolTip = "بازیابی اندازه پنجره";
             }
             else
             {
-                WindowState = WindowState.Maximized;
-                PathMaximize.Data = (Geometry)FindResource("GeomRestore");
+                if (RootBorder != null)
+                {
+                    RootBorder.BorderThickness = new Thickness(1);
+                    RootBorder.Margin = new Thickness(0);
+                }
+                if (PathMaximize != null)
+                    PathMaximize.Data = (Geometry)FindResource("GeomMaximize");
+                if (BtnMaximize != null)
+                    BtnMaximize.ToolTip = "بزرگ‌کردن / بازیابی";
             }
+
+            SetColumns(_preferredColumns);
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
@@ -735,24 +921,134 @@ namespace DNSChangerApp
             }
         }
 
+        private static T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild) return typedChild;
+                T? childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null) return childOfChild;
+            }
+            return null;
+        }
+
+        private void SetColumns(int cols)
+        {
+            _preferredColumns = cols;
+            GridColumns = cols;
+
+            var ug = FindVisualChild<UniformGrid>(DnsCardsList);
+            if (ug != null)
+            {
+                ug.Columns = cols;
+            }
+
+            UpdatePresetButtonHighlight(cols);
+            UpdateCardWidthDisplay();
+        }
+
+        private void UpdateCardWidthDisplay()
+        {
+            if (CardsContainer == null || TxtCardWidthDisplay == null) return;
+
+            double containerWidth = CardsContainer.ViewportWidth > 0
+                ? CardsContainer.ViewportWidth
+                : (CardsContainer.ActualWidth > 0 ? CardsContainer.ActualWidth - 24 : 1000);
+
+            double availableWidth = containerWidth - (CardsContainer.Padding.Left + CardsContainer.Padding.Right);
+
+            int cols = GridColumns > 0 ? GridColumns : 4;
+            double colWidth = Math.Max(0, (availableWidth / cols) - 8);
+
+            TxtCardWidthDisplay.Text = $"{colWidth:0}px";
+
+            if (SliderCardWidth != null && !SliderCardWidth.IsMouseCaptureWithin)
+            {
+                SliderCardWidth.ValueChanged -= SliderCardWidth_ValueChanged;
+                SliderCardWidth.Value = Math.Clamp(colWidth, SliderCardWidth.Minimum, SliderCardWidth.Maximum);
+                SliderCardWidth.ValueChanged += SliderCardWidth_ValueChanged;
+            }
+        }
+
+        private void CardsContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.WidthChanged)
+            {
+                double availableWidth = e.NewSize.Width - (CardsContainer.Padding.Left + CardsContainer.Padding.Right);
+                if (availableWidth > 200)
+                {
+                    int maxPossibleCols = Math.Max(1, (int)(availableWidth / 175));
+                    int effectiveCols = Math.Min(_preferredColumns, maxPossibleCols);
+                    effectiveCols = Math.Max(2, effectiveCols);
+                    SetColumns(effectiveCols);
+                }
+                else
+                {
+                    UpdateCardWidthDisplay();
+                }
+            }
+        }
+
+        private void SliderCardWidth_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!IsLoaded || CardsContainer == null) return;
+
+            double containerWidth = CardsContainer.ViewportWidth > 0 ? CardsContainer.ViewportWidth : CardsContainer.ActualWidth;
+            double availableWidth = containerWidth - (CardsContainer.Padding.Left + CardsContainer.Padding.Right);
+            if (availableWidth <= 180) return;
+
+            int cols = (int)Math.Round(availableWidth / (e.NewValue + 8.0));
+            cols = Math.Clamp(cols, 2, 5);
+
+            SetColumns(cols);
+        }
+
+        private void UpdatePresetButtonHighlight(int activeCols)
+        {
+            HighlightButton(BtnCol5, activeCols == 5);
+            HighlightButton(BtnCol4, activeCols == 4);
+            HighlightButton(BtnCol3, activeCols == 3);
+            HighlightButton(BtnCol2, activeCols == 2);
+        }
+
+        private static void HighlightButton(Button? btn, bool isActive)
+        {
+            if (btn == null) return;
+            if (isActive)
+            {
+                btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1D4ED8"));
+                btn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B82F6"));
+                btn.Foreground = Brushes.White;
+            }
+            else
+            {
+                btn.ClearValue(Button.BackgroundProperty);
+                btn.ClearValue(Button.BorderBrushProperty);
+                btn.ClearValue(Button.ForegroundProperty);
+            }
+        }
+
         private void BtnPreset5_Click(object sender, RoutedEventArgs e)
         {
-            SliderCardWidth.Value = 192;
+            SetColumns(5);
         }
 
         private void BtnPreset4_Click(object sender, RoutedEventArgs e)
         {
-            SliderCardWidth.Value = 245;
+            SetColumns(4);
         }
 
         private void BtnPreset3_Click(object sender, RoutedEventArgs e)
         {
-            SliderCardWidth.Value = 330;
+            SetColumns(3);
         }
 
         private void BtnPreset2_Click(object sender, RoutedEventArgs e)
         {
-            SliderCardWidth.Value = 500;
+            SetColumns(2);
         }
 
         private void ShowToast(string message, bool isError = false)

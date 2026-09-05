@@ -95,21 +95,21 @@ namespace DNSChangerApp.Models
             }
             else if (_resolved && _httpOk)
             {
-                StatusTitle = $"موفق ({_latencyMs}ms)";
+                StatusTitle = $"موفق - {_latencyMs}ms";
                 StatusColor = "#34D399";
                 StatusBg = "#1A2D22";
                 StatusBorder = "#2E543C";
             }
             else if (_resolved && (_statusCode == 403 || _statusCode == 451))
             {
-                StatusTitle = "محدودیت IP سرویس (403)";
+                StatusTitle = "محدودیت سرویس - کد ۴۰۳";
                 StatusColor = "#FBBF24";
                 StatusBg = "#30261A";
                 StatusBorder = "#503E20";
             }
             else if (_resolved)
             {
-                StatusTitle = $"حل شد ({_latencyMs}ms)";
+                StatusTitle = $"حل شد - {_latencyMs}ms";
                 StatusColor = "#60CDFF";
                 StatusBg = "#1C293A";
                 StatusBorder = "#2E4766";

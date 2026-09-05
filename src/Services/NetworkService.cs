@@ -21,7 +21,7 @@ namespace DNSChangerApp.Services
         public bool IsPhysical { get; set; } = true;
 
         public bool IsUp => Status.Equals("Up", StringComparison.OrdinalIgnoreCase);
-        public string StatusText => IsUp ? "متصل (Up)" : "غیرفعال";
+        public string StatusText => IsUp ? "متصل" : "غیرفعال";
         public string StatusBg => IsUp ? "#1E3326" : "#2A2A2A";
         public string StatusFg => IsUp ? "#34D399" : "#888888";
     }
@@ -531,8 +531,8 @@ namespace DNSChangerApp.Services
             var activeIps = GetCurrentDns(adapterName);
             if (activeIps.Count == 0)
             {
-                result.ActiveDnsList = "خودکار (DHCP - پیش‌فرض مودم / ISP)";
-                result.IdentifiedService = "پیش‌فرض سرویس‌دهنده اینترنت (ISP)";
+                result.ActiveDnsList = "خودکار - پیش‌فرض مودم و شبکه";
+                result.IdentifiedService = "پیش‌فرض سرویس‌دهنده اینترنت";
             }
             else
             {
@@ -540,17 +540,17 @@ namespace DNSChangerApp.Services
                 var match = knownServers.FirstOrDefault(s => activeIps.Contains(s.Primary) || activeIps.Contains(s.Secondary));
                 if (match != null)
                 {
-                    result.IdentifiedService = $"{match.Name} ({match.TypeBadgeText})";
+                    result.IdentifiedService = $"{match.Name} - {match.TypeBadgeText}";
                 }
                 else
                 {
                     // Check standard Iranian ISP DNS
                     if (activeIps.Contains("5.200.200.200"))
-                        result.IdentifiedService = "مخابرات ایران (TCI)";
+                        result.IdentifiedService = "مخابرات ایران";
                     else if (activeIps.Contains("217.218.127.127"))
-                        result.IdentifiedService = "دیتاسنتر زیرساخت ایران (DCI)";
+                        result.IdentifiedService = "دیتاسنتر زیرساخت ایران";
                     else
-                        result.IdentifiedService = "تنظیم دستی کاربر (Custom DNS)";
+                        result.IdentifiedService = "تنظیم دستی کاربر";
                 }
             }
 

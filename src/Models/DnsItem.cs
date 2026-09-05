@@ -142,7 +142,7 @@ namespace DNSChangerApp.Models
             get
             {
                 if (_isTesting) return "در حال بررسی...";
-                if (_bestPing >= 9999) return "عدم پاسخ (تایم‌اوت)";
+                if (_bestPing >= 9999) return "تایم‌اوت";
                 return $"{_bestPing} ms";
             }
         }
@@ -163,10 +163,13 @@ namespace DNSChangerApp.Models
         {
             get
             {
+                if (IsCustom) return "سفارشی";
                 return Type switch
                 {
                     "Anti-Sanction" => "رفع تحریم",
                     "Global" => "بین‌المللی",
+                    "Privacy" => "حریم خصوصی",
+                    "Family" => "خانواده و امنیت",
                     "ISP" => "داخلی ISP",
                     _ => "سفارشی"
                 };
@@ -177,12 +180,15 @@ namespace DNSChangerApp.Models
         {
             get
             {
+                if (IsCustom) return "#331B2D";
                 return Type switch
                 {
                     "Anti-Sanction" => "#2E243D",
                     "Global" => "#1C293A",
-                    "ISP" => "#292929",
-                    _ => "#292929"
+                    "Privacy" => "#163328",
+                    "Family" => "#352516",
+                    "ISP" => "#232936",
+                    _ => "#331B2D"
                 };
             }
         }
@@ -191,12 +197,15 @@ namespace DNSChangerApp.Models
         {
             get
             {
+                if (IsCustom) return "#5C284E";
                 return Type switch
                 {
                     "Anti-Sanction" => "#553C73",
                     "Global" => "#2E4766",
-                    "ISP" => "#404040",
-                    _ => "#404040"
+                    "Privacy" => "#225C43",
+                    "Family" => "#66431E",
+                    "ISP" => "#3B4861",
+                    _ => "#5C284E"
                 };
             }
         }
@@ -205,17 +214,20 @@ namespace DNSChangerApp.Models
         {
             get
             {
+                if (IsCustom) return "#F472B6";
                 return Type switch
                 {
                     "Anti-Sanction" => "#D8B4FE",
                     "Global" => "#93C5FD",
-                    "ISP" => "#CCCCCC",
-                    _ => "#CCCCCC"
+                    "Privacy" => "#6EE7B7",
+                    "Family" => "#FDBA74",
+                    "ISP" => "#94A3B8",
+                    _ => "#F472B6"
                 };
             }
         }
 
-        public string ActiveStatusText => _isActive ? "متصل (فعال)" : "اتصال";
+        public string ActiveStatusText => _isActive ? "متصل" : "اتصال";
 
         private void UpdateBestPing()
         {
