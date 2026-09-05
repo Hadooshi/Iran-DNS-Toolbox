@@ -7,13 +7,17 @@
 [![Author](https://img.shields.io/badge/Author-Hadooshi-blueviolet.svg?style=flat-square&logo=github)](https://github.com/Hadooshi)
 [![.NET](https://img.shields.io/badge/.NET-6.0%20WPF-512BD4.svg?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com)
 [![Download Latest Release](https://img.shields.io/badge/Download-DNSChanger.exe-success?style=flat-square&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
-[![Servers](https://img.shields.io/badge/DNS%20Servers-47%20Verified-informational.svg?style=flat-square)](https://github.com/Hadooshi/Iran-DNS-Toolbox)
+[![Servers](https://img.shields.io/badge/DNS%20Servers-48%20Verified-informational.svg?style=flat-square)](https://github.com/Hadooshi/Iran-DNS-Toolbox)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
 **ابزار جامع، فوق‌سریع و هوشمند تغییر DNS و عبور از تحریم‌های اینترنتی برای ویندوز**  
-**شامل ۴۷ سرور تست‌شده، مرتب‌سازی هوشمند و راستی‌آزمایی زنده ۲۰ سرویس بین‌المللی**
+**شامل ۴۸ سرور تست‌شده، مرتب‌سازی هوشمند و راستی‌آزمایی زنده ۲۰ سرویس بین‌المللی**
 
 [![Download Now](https://img.shields.io/badge/%E2%AC%87%EF%B8%8F%20%D8%AF%D8%A7%D9%86%D9%84%D9%88%D8%AF%20%D9%85%D8%B3%D8%AA%D9%82%DB%8C%D9%85%20%D9%86%D8%B1%D9%85%E2%80%8C%D8%A7%D9%81%D8%B2%D8%A7%D8%B1%20(DNSChanger.exe)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/Hadooshi/Iran-DNS-Toolbox/releases/latest)
+
+<br/><br/>
+
+<img src="assets/screenshot.png" alt="DNS Changer & Anti-Sanction Tool UI - محیط کاربری نرم‌افزار" width="100%" />
 
 </div>
 
@@ -24,7 +28,7 @@
 ## 🇮🇷 راهنمای فارسی
 
 ### 🌟 درباره پروژه
-پروژه **DNS Changer & Anti-Sanction Tool** یک نرم‌افزار نیتیو، بسیار سریع، سبک و مدرن برای سیستم‌عامل ویندوز توسط **[Hadooshi](https://github.com/Hadooshi)** است. این ابزار به صورت همزمان وضعیت پینگ واقعی (ICMP) و باز بودن پورت ۵۳ (UDP Query) بیش از **۴۷ سرور DNS** (شامل سرورهای رفع تحریم ایران، ستون فقرات جهانی، حریم خصوصی، خانواده و ISPها) را سنجش کرده و امکان تنظیم ۱-کلیکی آن‌ها را مستقیماً روی **کارت شبکه فیزیکی سیستم (وای‌فای یا اترنت)** فراهم می‌کند.
+پروژه **DNS Changer & Anti-Sanction Tool** یک نرم‌افزار نیتیو، بسیار سریع، سبک و مدرن برای سیستم‌عامل ویندوز توسط **[Hadooshi](https://github.com/Hadooshi)** است. این ابزار به صورت همزمان وضعیت پینگ واقعی (ICMP) و باز بودن پورت ۵۳ (UDP Query) بیش از **۴۸ سرور DNS** (شامل سرورهای رفع تحریم ایران، ستون فقرات جهانی، حریم خصوصی، خانواده و ISPها) را سنجش کرده و امکان تنظیم ۱-کلیکی آن‌ها را مستقیماً روی **کارت شبکه فیزیکی سیستم (وای‌فای یا اترنت)** فراهم می‌کند.
 
 ---
 
@@ -180,7 +184,7 @@ build.bat
 ## 🇬 English Documentation
 
 ### 🌟 About The Project
-**DNS Changer & Anti-Sanction Tool** (v2.2.0) is a native, ultra-fast, lightweight Windows desktop application by **[Hadooshi](https://github.com/Hadooshi)** designed to test ICMP latency and UDP Port 53 reachability for **47+ major Anti-Sanction & Global DNS servers**.
+**DNS Changer & Anti-Sanction Tool** (v2.2.1) is a native, ultra-fast, lightweight Windows desktop application by **[Hadooshi](https://github.com/Hadooshi)** designed to test ICMP latency and UDP Port 53 reachability for **48+ major Anti-Sanction & Global DNS servers**.
 
 It allows users to switch network DNS with **1 click** directly on their physical network adapter (Wi-Fi or Ethernet), while automatically ignoring virtual VPN adapters (such as NordLynx, WireGuard, and TAP interfaces).
 
@@ -199,7 +203,7 @@ It allows users to switch network DNS with **1 click** directly on their physica
 * **Flexible Layout & Card Size Slider:** Dynamic card resizing (185px to 510px) with 5-card, 4-card, 3-card, and 2-card per row presets.
 * **Compact Table/List View:** Highly dense horizontal table view for power users.
 * **Comprehensive 20-Service Sanction Verification:** Real-time DNS resolution and HTTP geo-block detection (code 403) for AI, Dev, Creative, Gaming, Media, Learning, and Freelance services.
-* **Multi-threaded Testing:** Parallel ping and UDP DNS query testing for all 47 servers in under 2 seconds.
+* **Multi-threaded Testing:** Parallel ping and UDP DNS query testing for all 48 servers in under 2 seconds.
 * **1-Click Actions:** Auto-set fastest DNS, reset to DHCP, flush DNS cache (`ipconfig /flushdns`), emergency network stack reset, and persistent custom DNS cards.
 * **Self-Elevating Admin:** Embedded Windows application manifest for silent UAC elevation.
 
